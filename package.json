@@ -1,0 +1,26 @@
+{
+  "name": "defragtcpsocket",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "An example for a tcp server for the lambda compatible plugin to remotely control your game",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Edouard127/DefragTCPSocket.git"
+  },
+  "keywords": [
+    "lambda",
+    "lambda",
+    "plugins"
+  ],
+  "author": "Edouard127",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Edouard127/DefragTCPSocket/issues"
+  },
+  "homepage": "https://github.com/Edouard127/DefragTCPSocket#readme"
+}
