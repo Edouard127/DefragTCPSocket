@@ -16,7 +16,8 @@ const broadcast = function (data, sender, password) {
 
     for (let sock of connectedSockets) {
         if (sock !== sender && crypto.createHash('sha256').update(password).digest('base64') == pass) {
-            sock.write(JSON.stringify(data)+"\r\n");
+            sock.setEncoding('utf8');
+            sock.write(JSON.stringify(data));
         }
     }
 }
