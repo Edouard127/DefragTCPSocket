@@ -3,6 +3,7 @@ import { bits } from "./utils/commands.js"
 import { isValidBaritone } from "./utils/isValidBaritone"
 import zlib from "node:zlib"
 import crypto from "crypto"
+import "colors"
 
 const PORT = 1984
 const HOST = "0.0.0.0"
@@ -23,7 +24,10 @@ const broadcast = (data: Array<string>, sender: Socket, password: string) => {
     })
 }
 
-const kill = () => connectedSockets.forEach((sock) => sock.end("-1"))
+const kill = () => {
+    console.log("Killing connections".bgRed.white)
+    connectedSockets.forEach((sock) => sock.end("-1"))
+}
 
 const server = net.createServer((socket) => {
     socket.on("data", (data) => {
@@ -57,4 +61,9 @@ server.on("connection", (socket) => {
     if (!connectedSockets.has(socket)) connectedSockets.add(socket)
     console.log("New client", socket.remoteAddress)
 })
+
+process.on("uncaughtException", () => kill())
+process.on("unhandledRejection", () => kill())
+process.on("SIGINT", () => kill())
+
 
