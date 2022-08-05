@@ -6,4 +6,4 @@ export const bits = {
     CHAT: 2 << 2,
     BARITONE: 2 << 2,
     MOD_COMMAND: 2 << 3,
-}
+} as const;

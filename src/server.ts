@@ -1,27 +1,26 @@
-import net from "net"
+import net, { Socket } from "net"
 import { bits } from "./utils/commands.js"
+import { isValidBaritone } from "./utils/isValidBaritone"
 import zlib from "node:zlib"
 import crypto from "crypto"
 
 const PORT = 1984
 const HOST = "0.0.0.0"
 
-const connectedSockets = new Set();
+const connectedSockets = new Set<Socket>();
 
 let pass = ""
 
-const goodPass = (password) => crypto.createHash('sha256').update(password).digest('base64') == pass
+const goodPass = (password: string) => crypto.createHash('sha256').update(password).digest('base64') == pass
 
-const broadcast = (data, sender, password) => {
-    console.log(data)
-    console.log(pass)
-
-    for (let sock of connectedSockets) {
+const broadcast = (data: Array<string>, sender: Socket, password: string) => {
+    connectedSockets.forEach((sock) => {
+        sock = sock as Socket
         if (sock !== sender && goodPass(password)) {
             sock.setEncoding('utf8');
             sock.write(data.toString().replace(/,/g, " ")+"\r\n");
         }
-    }
+    })
 }
 
 const kill = () => connectedSockets.forEach((sock) => sock.end("-1"))
@@ -44,6 +43,8 @@ const server = net.createServer((socket) => {
                 case parsed[0] == bits.INIT && !pass: return pass = crypto.createHash('sha256').update(parsed[1]).digest('base64')
                 case parsed[0] == bits.CONNECT: return broadcast([parsed[0], ...parsed.splice(2, 2)], socket, parsed[1])
                 case parsed[0] == bits.CHAT: return broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1])
+                case parsed[0] == bits.BARITONE: if(isValidBaritone(args)) return broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1])
+                case parsed[0] == bits.MOD_COMMAND: return broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1])
                 default: return socket.end("-1")
             }
 
