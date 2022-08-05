@@ -12,7 +12,7 @@ let pass = ""
 
 const goodPass = (password) => crypto.createHash('sha256').update(password).digest('base64') == pass
 
-const broadcast = (data, sender, password) {
+const broadcast = (data, sender, password) => {
     console.log(data)
     console.log(pass)
 
@@ -44,6 +44,7 @@ const server = net.createServer((socket) => {
                 case parsed[0] == bits.INIT && !pass: return pass = crypto.createHash('sha256').update(parsed[1]).digest('base64')
                 case parsed[0] == bits.CONNECT: return broadcast([parsed[0], ...parsed.splice(2, 2)], socket, parsed[1])
                 case parsed[0] == bits.CHAT: return broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1])
+                default: return socket.end("-1")
             }
 
     })
