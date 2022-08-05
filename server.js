@@ -10,17 +10,21 @@ const connectedSockets = new Set();
 
 let pass = ""
 
-const broadcast = function (data, sender, password) {
+const goodPass = (password) => crypto.createHash('sha256').update(password).digest('base64') == pass
+
+const broadcast = (data, sender, password) {
     console.log(data)
     console.log(pass)
 
     for (let sock of connectedSockets) {
-        if (sock !== sender && crypto.createHash('sha256').update(password).digest('base64') == pass) {
+        if (sock !== sender && goodPass(password)) {
             sock.setEncoding('utf8');
             sock.write(data.toString().replace(/,/g, " ")+"\r\n");
         }
     }
 }
+
+const kill = () => connectedSockets.forEach((sock) => sock.end("-1"))
 
 const server = net.createServer((socket) => {
     socket.on("data", (data) => {
@@ -36,15 +40,14 @@ const server = net.createServer((socket) => {
             console.log(parsed, args)
             
             switch(true) {
+                case parsed[0] == bits.EXIT && goodPass(parsed[1]): pass = ""; return kill()
                 case parsed[0] == bits.INIT && !pass: return pass = crypto.createHash('sha256').update(parsed[1]).digest('base64')
                 case parsed[0] == bits.CONNECT: return broadcast([parsed[0], ...parsed.splice(2, 2)], socket, parsed[1])
                 case parsed[0] == bits.CHAT: return broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1])
             }
 
     })
-    socket.on("error", (err) => {
-        console.log(err.message)
-    })
+    socket.on("error", () => kill())
 
 }).listen(PORT, HOST)
 
@@ -52,5 +55,4 @@ server.on("connection", (socket) => {
     if (!connectedSockets.has(socket)) connectedSockets.add(socket)
     console.log("New client", socket.remoteAddress)
 })
-server.on("close", () => connectedSockets.clear())
 
