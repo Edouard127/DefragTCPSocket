@@ -21,5 +21,8 @@
   "bugs": {
     "url": "https://github.com/Edouard127/DefragTCPSocket/issues"
   },
-  "homepage": "https://github.com/Edouard127/DefragTCPSocket#readme"
+  "homepage": "https://github.com/Edouard127/DefragTCPSocket#readme",
+  "dependencies": {
+    "colors": "^1.4.0"
+  }
 }
