@@ -11,14 +11,19 @@ const HOST = "0.0.0.0"
 
 const connectedSockets = new Set<Socket>();
 
-let pass = ""
+let pass = new Map<Socket, string>()
 
-const goodPass = (password: string) => crypto.createHash('sha256').update(password).digest('base64') == pass
+const goodPass = (socket: Socket, password: string) => {
+    if (pass.has(socket)) {
+        return pass.get(socket) === password
+    }
+    return false
+}
 
 const broadcast = (data: Array<string>, sender: Socket, password: string) => {
     connectedSockets.forEach((sock) => {
         sock = sock as Socket
-        if (sock !== sender && goodPass(password)) {
+        if (sock !== sender && goodPass(sock, password)) {
             sock.setEncoding('utf8');
             sock.write(data.toString().replace(/,/g, " ")+"\r\n");
         }
@@ -44,11 +49,13 @@ const server = net.createServer((socket) => {
             console.log(parsed, args)
             
             switch(true) {
-                case parsed[0] == bits.EXIT && goodPass(parsed[1]): pass = ""; return kill(responses.DISCONNECT)
-                case parsed[0] == bits.INIT && !pass: return pass = crypto.createHash('sha256').update(parsed[1]).digest('base64')
-                case parsed[0] == bits.CONNECT: return broadcast([parsed[0], ...parsed.splice(2, 2)], socket, parsed[1])
+                case parsed[0] == bits.EXIT && goodPass(socket, parsed[1]): pass.clear(); return kill(responses.DISCONNECT)
+                case parsed[0] == bits.LOGIN: return broadcast([parsed[0], ...parsed.splice(2, 2)], socket, parsed[1])
+
+                case parsed[0] == bits.ADD_WORKER: pass.set(socket, crypto.createHash('sha256').update(parsed[1]).digest('base64')); return socket.write(responses.OK)
+                case parsed[0] == bits.REMOVE_WORKER: return socket.write(pass.delete(socket) ? responses.OK : responses.WORKER_NOT_FOUND)
                 case parsed[0] == bits.CHAT: return broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1])
-                case parsed[0] == bits.BARITONE: if(isValidBaritone(args)) return broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1])
+                case parsed[0] == bits.BARITONE: return isValidBaritone(args) ? broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1]) : socket.write(responses.BAD_ARGUMENTS)
                 case parsed[0] == bits.MOD_COMMAND: return broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1])
                 default: return socket.end(responses.BAD_COMMAND)
             }
