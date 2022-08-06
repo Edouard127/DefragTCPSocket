@@ -11,11 +11,13 @@ console.log(args)
 const client = net.connect(PORT, HOST, () => {
     client.on("data", (data) => {
         console.log("Response from server:", data.toString())
-        client.end()
     })
     
     client.on("ready", () => {
-        const command = /*zlib.deflateSync(*/JSON.stringify([...args])//)
-        client.write(command) // Send
+        process.stdin.on("data", (data) => {
+            const command = data.toString()
+            console.log("Command:", command)
+            client.write(command)
+        })
     })
 })
