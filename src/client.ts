@@ -20,4 +20,6 @@ const client = net.connect(PORT, HOST, () => {
             client.write(command)
         })
     })
+    client.on("close", () => process.exit(0))
+    client.on("error", () => process.exit(-1))
 })
