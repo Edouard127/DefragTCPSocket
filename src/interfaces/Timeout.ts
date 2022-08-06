@@ -1,4 +1,10 @@
+import { Socket } from "net"
+
 export default interface Timeout {
-    PONG: string
-    TIME: number
+    PONG: Pong;
+    TIME: number;
+}
+interface Pong {
+    socket: Socket;
+    code: string;
 }

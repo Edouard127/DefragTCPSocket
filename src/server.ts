@@ -12,7 +12,7 @@ const HOST = "0.0.0.0"
 
 const connectedSockets = new Map<Socket, String>()
 
-const heartBeats = new Map<Socket, Timeout>()
+const heartBeats = new Set<Timeout>()
 
 const goodPass = (password: string) => {
 
@@ -45,19 +45,18 @@ const kill = (code: ServerResponses) => {
 const performKeepAlive = () => {
     connectedSockets.forEach((_, socket) => {
         const code = (Math.random() + 1).toString(16).substring(10);
-        heartBeats.set(socket, { PONG: code, TIME: new Date().getTime() })
+        heartBeats.add({ PONG: { socket: socket, code: code }, TIME: new Date().getTime() })
         const o = "PING "+ code
         write(o, socket)
     })
 }
 
 const killInactive = () => {
-    const time = new Date().getTime()
-    heartBeats.forEach((v, k) => {
-        if (time - v.TIME > 1000) {
-            end(responses.TIMEOUT, k)
-        }
-    })
+        heartBeats.forEach((v, k) => {
+            if (new Date().getTime() - v.TIME > 10000 ) {
+                end(responses.TIMEOUT, k.PONG.socket)
+            }
+        })
 }
 
 const write = (data: any, socket: Socket) => socket.write(zlib.deflateSync(data));
@@ -68,7 +67,7 @@ const end = (data: ServerResponses, socket: Socket) => socket.end(zlib.deflateSy
 setInterval(() => {
     performKeepAlive()
     killInactive()
-}, 1000)
+}, 10000)
 
 
 const server = net.createServer((socket) => {
