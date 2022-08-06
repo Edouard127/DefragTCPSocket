@@ -44,7 +44,7 @@ const server = net.createServer((socket) => {
             console.log(parsed, args)
             
             switch(true) {
-                case parsed[0] == bits.EXIT && goodPass(parsed[1]): pass = ""; return kill(responses.UNAUTHORIZED)
+                case parsed[0] == bits.EXIT && goodPass(parsed[1]): pass = ""; return kill(responses.DISCONNECT)
                 case parsed[0] == bits.INIT && !pass: return pass = crypto.createHash('sha256').update(parsed[1]).digest('base64')
                 case parsed[0] == bits.CONNECT: return broadcast([parsed[0], ...parsed.splice(2, 2)], socket, parsed[1])
                 case parsed[0] == bits.CHAT: return broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1])
