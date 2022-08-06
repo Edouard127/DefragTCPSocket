@@ -52,11 +52,12 @@ const performKeepAlive = () => {
 }
 
 const killInactive = () => {
-        heartBeats.forEach((v, k) => {
-            if (new Date().getTime() - v.TIME > 10000 ) {
-                end(responses.TIMEOUT, k.PONG.socket)
-            }
-        })
+    heartBeats.forEach((k) => {
+        if (new Date().getTime() - k.TIME > 10000 ) {
+            end(responses.TIMEOUT, k.PONG.socket)
+        }
+        heartBeats.delete(k)
+    })
 }
 
 const write = (data: any, socket: Socket) => socket.write(zlib.deflateSync(data));
