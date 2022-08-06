@@ -7,4 +7,5 @@ export const responses = {
     BAD_COMMAND: "4",
     BAD_ARGUMENTS: "5",
     BAD_PASSWORD: "6",
+    WORKER_NOT_FOUND: "7",
 } as const;
