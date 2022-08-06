@@ -1,17 +1,18 @@
 import net, { Socket } from "net"
 import { bits } from "./utils/commands.js"
 import { isValidBaritone } from "./utils/isValidBaritone"
-import { responses } from "./utils/serverResponses"
+import { responses, ServerResponses } from "./utils/serverResponses"
 import zlib from "node:zlib"
 import crypto from "crypto"
 import "colors"
+import Timeout from "./interfaces/Timeout.js"
 
 const PORT = 1984
 const HOST = "0.0.0.0"
 
-const connectedSockets = new Map<Socket, string>()
+const connectedSockets = new Map<Socket, String>()
 
-const heartBeats = new Map<String, number>()
+const heartBeats = new Map<Socket, Timeout>()
 
 const goodPass = (password: string) => {
 
@@ -36,7 +37,7 @@ const broadcast = (data: Array<string>, sender: Socket, password: string) => {
     })
 }
 
-const kill = (code: string) => {
+const kill = (code: ServerResponses) => {
     console.log("Killing connections".bgRed.white)
     connectedSockets.forEach((_, socket) => end(code, socket))
 }
@@ -44,18 +45,30 @@ const kill = (code: string) => {
 const performKeepAlive = () => {
     connectedSockets.forEach((_, socket) => {
         const code = (Math.random() + 1).toString(16).substring(10);
-        heartBeats.set(code, new Date().getTime())
+        heartBeats.set(socket, { PONG: code, TIME: new Date().getTime() })
         const o = "PING "+ code
         write(o, socket)
     })
 }
 
+const killInactive = () => {
+    const time = new Date().getTime()
+    heartBeats.forEach((v, k) => {
+        if (time - v.TIME > 1000) {
+            end(responses.TIMEOUT, k)
+        }
+    })
+}
+
 const write = (data: any, socket: Socket) => socket.write(zlib.deflateSync(data));
 
-const end = (data: any, socket: Socket) => socket.end(zlib.deflateSync(JSON.stringify(data))+"\r\n");
+const end = (data: ServerResponses, socket: Socket) => socket.end(zlib.deflateSync(data+"\r\n"));
 
 
-setInterval(performKeepAlive, 20000)
+setInterval(() => {
+    performKeepAlive()
+    killInactive()
+}, 1000)
 
 
 const server = net.createServer((socket) => {
