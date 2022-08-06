@@ -1,6 +1,7 @@
 import net, { Socket } from "net"
 import { bits } from "./utils/commands.js"
 import { isValidBaritone } from "./utils/isValidBaritone"
+import { responses } from "./utils/serverResponses"
 import zlib from "node:zlib"
 import crypto from "crypto"
 import "colors"
@@ -24,9 +25,9 @@ const broadcast = (data: Array<string>, sender: Socket, password: string) => {
     })
 }
 
-const kill = () => {
+const kill = (code: string) => {
     console.log("Killing connections".bgRed.white)
-    connectedSockets.forEach((sock) => sock.end("-1"))
+    connectedSockets.forEach((sock) => sock.end(code))
 }
 
 const server = net.createServer((socket) => {
@@ -35,7 +36,7 @@ const server = net.createServer((socket) => {
 
             const command = /*zlib.inflateSync(data.buffer).toString()*/data.toString()
 
-            if (!command) return socket.end("-1")
+            if (!command) return socket.end(responses.BAD_COMMAND)
 
             const parsed = [...JSON.parse(command)]
 
@@ -43,7 +44,7 @@ const server = net.createServer((socket) => {
             console.log(parsed, args)
             
             switch(true) {
-                case parsed[0] == bits.EXIT && goodPass(parsed[1]): pass = ""; return kill()
+                case parsed[0] == bits.EXIT && goodPass(parsed[1]): pass = ""; return kill(responses.UNAUTHORIZED)
                 case parsed[0] == bits.INIT && !pass: return pass = crypto.createHash('sha256').update(parsed[1]).digest('base64')
                 case parsed[0] == bits.CONNECT: return broadcast([parsed[0], ...parsed.splice(2, 2)], socket, parsed[1])
                 case parsed[0] == bits.CHAT: return broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1])
@@ -53,7 +54,7 @@ const server = net.createServer((socket) => {
             }
 
     })
-    socket.on("error", () => kill())
+    socket.on("error", () => kill(responses.SERVER_ERROR))
 
 }).listen(PORT, HOST)
 
@@ -62,8 +63,8 @@ server.on("connection", (socket) => {
     console.log("New client", socket.remoteAddress)
 })
 
-process.on("uncaughtException", () => kill())
-process.on("unhandledRejection", () => kill())
-process.on("SIGINT", () => kill())
+process.on("uncaughtException", () => kill(responses.SERVER_ERROR))
+process.on("unhandledRejection", () => kill(responses.SERVER_ERROR))
+process.on("SIGINT", () =>  { kill(responses.SERVER_CLOSED); process.exit(0) })
 
 
