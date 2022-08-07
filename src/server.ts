@@ -45,7 +45,7 @@ const performKeepAlive = () => {
     connectedSockets.forEach((_, socket) => {
         const code = (Math.random() + 1).toString(16).substring(10);
         heartBeats.add({ PONG: { socket: socket, code: code }, TIME: new Date().getTime() })
-        write(bits.HEARTBEAT.toString(), socket)
+        write("PING " + code, socket)
     })
 }
 
@@ -68,7 +68,7 @@ const end = (data: ServerResponses, socket: Socket) => socket.end(Buffer.from(da
 setInterval(() => {
     performKeepAlive()
     killInactive()
-}, 15000)
+}, 1000)
 
 
 const server = net.createServer((socket) => {
@@ -85,7 +85,7 @@ const server = net.createServer((socket) => {
             
             switch(true) {
                 case parsed[0] == bits.EXIT && goodPass(parsed[1]): connectedSockets.clear(); return kill(responses.DISCONNECT)
-                case parsed[0] == bits.HEARTBEAT: console.log("Heartbeat received".bgGreen.white, parsed[1]); return heartBeats.delete(parsed[0])
+                case parsed[0] == bits.HEARTBEAT: console.log("Heartbeat received".bgGreen.white, parsed.join(" ")); return heartBeats.delete(parsed[0])
                 case parsed[0] == bits.LOGIN: return broadcast([parsed[0], ...parsed.splice(2, 2)], socket, parsed[1])
 
                 case parsed[0] == bits.ADD_WORKER: connectedSockets.set(socket, crypto.createHash('sha256').update(parsed[1]).digest('base64')); return write(responses.OK, socket)
