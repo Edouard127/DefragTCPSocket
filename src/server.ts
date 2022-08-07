@@ -105,10 +105,7 @@ const server = net.createServer((socket) => {
         heartBeats.clear()
         console.log("Connection closed".bgRed.white)
     })
-    socket.on("error", (e) => {
-        console.log(e)
-        kill(responses.SERVER_ERROR)
-    })
+    socket.on("error", () => kill(responses.SERVER_ERROR))
 
 }).listen(PORT, HOST)
 
