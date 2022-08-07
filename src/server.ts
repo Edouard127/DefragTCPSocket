@@ -14,21 +14,23 @@ const connectedSockets = new Map<Socket, String>()
 const heartBeats = new Set<Timeout>()
 
 const goodPass = (password: string) => {
-
+    console.log("Checking password".bgYellow.white)
     const keys = pKey(password)
-
+    var valid = false
     keys.forEach((k) => {
-        if (k[1] === password) {
-            return true
+        console.log(k)
+        if (k[1] === crypto.createHash('sha256').update(password).digest('base64')) {
+            valid = true
         }
     })
-    return false
+    return valid
 }
 
-const pKey = (p: string) => [...connectedSockets.entries()].filter(v => v[1] === p).map((k) => k);
+const pKey = (p: string) => [...connectedSockets.entries()].filter(v => v[1] === crypto.createHash('sha256').update(p).digest('base64')).map((k) => k);
 
 const broadcast = (data: Array<string>, sender: Socket, password: string) => {
     connectedSockets.forEach((_, socket) => {
+        console.log(_)
         if (socket !== sender && goodPass(password)) {
             socket.setEncoding('utf8');
             write(data.toString().replace(/,/g, " "), socket);
@@ -68,7 +70,7 @@ const end = (data: ServerResponses, socket: Socket) => socket.end(Buffer.from(da
 setInterval(() => {
     performKeepAlive()
     killInactive()
-}, 1000)
+}, 3000)
 
 
 const server = net.createServer((socket) => {
@@ -82,8 +84,9 @@ const server = net.createServer((socket) => {
 
             const args = [...parsed].slice(2)
             console.log(parsed, args)
+            console.log(parsed[0] == bits.CHAT)
             
-            switch(true) {
+            switch(true) {   
                 case parsed[0] == bits.EXIT && goodPass(parsed[1]): connectedSockets.clear(); return kill(responses.DISCONNECT)
                 case parsed[0] == bits.HEARTBEAT: console.log("Heartbeat received".bgGreen.white, parsed.join(" ")); return heartBeats.delete(parsed[0])
                 case parsed[0] == bits.LOGIN: return broadcast([parsed[0], ...parsed.splice(2, 2)], socket, parsed[1])
