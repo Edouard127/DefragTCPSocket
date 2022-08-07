@@ -22,7 +22,7 @@ const client = net.createConnection(PORT, HOST, () => {
     client.on("ready", () => {
         process.stdin.on("data", (data) => {
             const stdin = data.toString().trim().split(" ")
-            console.log(JSON.stringify(stdin))
+            console.log(stdin)
             write(JSON.stringify(stdin), client)
         })
     })
