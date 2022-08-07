@@ -75,6 +75,7 @@ const server = net.createServer((socket) => {
             const command = Buffer.from(data.toString().trim(), "base64").toString("ascii")
 
             if (!command) return socket.end(responses.BAD_COMMAND)
+            if (!Array.isArray(JSON.parse(command))) return socket.end(responses.BAD_COMMAND)
 
             const parsed = [...JSON.parse(command)]
 
