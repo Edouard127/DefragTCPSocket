@@ -1,31 +1,43 @@
-export const isValidBaritone = (data: Array<String>) => isValid(data)
+export const isValidBaritone = (data: Array<string>) => isValid(data)
 // each command is an array of [command, maximum number of arguments]
 const commands = {
-    thisway: ["thisway", 1],
-    goal: ["goal", 3],
-    goto: ["goto", 3],
-    path: ["path", 0],
-    cancel: ["cancel", 0],
-    stop: ["stop", 0],
-    mine: ["mine", 100],
-    follow: ["follow", 2],
-    wp: ["wp", 3],
-    farm: ["farm", 2],
-    explore: ["explore", 2],
-    invert: ["invert", 0],
-    come: ["come", 0],
-    gc: ["gc", 0],
-    find: ["find", 1]
+    thisway: 1,
+    goal: 3,
+    goto: 3,
+    path: 0,
+    cancel: 0,
+    stop: 0,
+    mine: Infinity,
+    follow: 2,
+    wp: 3,
+    farm: 2,
+    explore: 2,
+    invert: 0,
+    come: 0,
+    gc: 0,
+    find: 1,
 }
-const isValid = (command: Array<String>) => {
+const isValid = (command: Array<string>) => {
     let valid = false
-    Object.entries(commands).forEach(cmd => {
-        if (cmd[0] == command[0] && getArgs(command).length <= Number(cmd[1])) valid = true
 
-    })
+    const c = command[0]
+    if (mapped().has(c)) {
+        if(getArgs(command).length <= mapped().get(c)!) valid = true
+    }
+
     return valid
 }
-// get the arguments of the command after the index 0
-const getArgs = (command: Array<String>) => {
+const getArgs = (command: Array<string>) => {
     return command.slice(1)
 }
+const keys = Object.keys(commands)
+
+const values = Object.values(commands)
+
+const mapped = () => {
+    const map = new Map<string, number>()
+    keys.forEach((k, i) => map.set(k, values[i]))
+    return map
+}
+
+
