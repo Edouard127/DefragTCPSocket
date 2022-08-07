@@ -87,7 +87,7 @@ const server = net.createServer((socket) => {
                 case parsed[0] == bits.HEARTBEAT: console.log("Heartbeat received".bgGreen.white, parsed.join(" ")); return heartBeats.delete(parsed[0])
                 case parsed[0] == bits.LOGIN: return broadcast([parsed[0], ...parsed.splice(2, 2)], socket, parsed[1])
 
-                case parsed[0] == bits.ADD_WORKER: connectedSockets.set(socket, crypto.createHash('sha256').update(parsed[1]).digest('base64')); return write(responses.OK, socket)
+                case parsed[0] == bits.ADD_WORKER: console.log("Worker added".bgGreen.white, parsed.join(" ")); connectedSockets.set(socket, crypto.createHash('sha256').update(parsed[1]).digest('base64')); return write(responses.OK, socket)
                 case parsed[0] == bits.REMOVE_WORKER: return write(connectedSockets.delete(socket) ? responses.OK : responses.WORKER_NOT_FOUND, socket)
                 case parsed[0] == bits.CHAT: return broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1])
                 case parsed[0] == bits.BARITONE: return isValidBaritone(args) ? broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1]) : write(responses.BAD_ARGUMENTS, socket)
