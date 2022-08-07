@@ -1,4 +1,5 @@
 import net, { Socket } from "net"
+import { bits } from "./utils/commands";
 
 const PORT = 1984
 const HOST = "localhost"
@@ -14,9 +15,7 @@ const client = net.createConnection(PORT, HOST, () => {
 
         console.log("Response from server:", o)
 
-        const response = o.split(" ")
-
-        if(o.indexOf("0") === 0) write(JSON.stringify(response), client)
+        if(o.indexOf("0") === 0) write(bits.HEARTBEAT, client)
     })
     
     client.on("ready", () => {

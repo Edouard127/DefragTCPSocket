@@ -45,8 +45,7 @@ const performKeepAlive = () => {
     connectedSockets.forEach((_, socket) => {
         const code = (Math.random() + 1).toString(16).substring(10);
         heartBeats.add({ PONG: { socket: socket, code: code }, TIME: new Date().getTime() })
-        const o = bits.HEARTBEAT + " " + code
-        write(o, socket)
+        write(bits.HEARTBEAT.toString(), socket)
     })
 }
 
