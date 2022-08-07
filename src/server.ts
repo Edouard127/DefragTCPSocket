@@ -2,7 +2,6 @@ import net, { Socket } from "net"
 import { bits } from "./utils/commands.js"
 import { isValidBaritone } from "./utils/isValidBaritone"
 import { responses, ServerResponses } from "./utils/serverResponses"
-import zlib from "node:zlib"
 import crypto from "crypto"
 import "colors"
 import Timeout from "./interfaces/Timeout.js"
@@ -46,36 +45,38 @@ const performKeepAlive = () => {
     connectedSockets.forEach((_, socket) => {
         const code = (Math.random() + 1).toString(16).substring(10);
         heartBeats.add({ PONG: { socket: socket, code: code }, TIME: new Date().getTime() })
-        const o = "PING "+ code
+        const o = bits.HEARTBEAT + " " + code
         write(o, socket)
     })
 }
 
 const killInactive = () => {
     heartBeats.forEach((k) => {
-        if (new Date().getTime() - k.TIME > 10000 ) {
+        if (new Date().getTime() - k.TIME > 20000 ) {
             end(responses.TIMEOUT, k.PONG.socket)
         }
         heartBeats.delete(k)
     })
 }
 
-const write = (data: any, socket: Socket) => socket.write(zlib.deflateSync(data));
+const write = (data: String, socket: Socket) => socket.write(Buffer.from(data).toString("base64")+"\r\n");
 
-const end = (data: ServerResponses, socket: Socket) => socket.end(zlib.deflateSync(data+"\r\n"));
+const end = (data: ServerResponses, socket: Socket) => socket.end(Buffer.from(data).toString("base64")+"\r\n");
+
 
 
 setInterval(() => {
     performKeepAlive()
     killInactive()
-}, 10000)
+}, 1000)
 
 
 const server = net.createServer((socket) => {
     socket.on("data", (data) => {
             console.log(data.toString())
 
-            const command = zlib.inflateSync(data.buffer).toString()
+            const command = Buffer.from(data.toString().trim(), "base64").toString("ascii")
+            console.log("Command:", command)
 
             if (!command) return socket.end(responses.BAD_COMMAND)
 
@@ -86,7 +87,7 @@ const server = net.createServer((socket) => {
             
             switch(true) {
                 case parsed[0] == bits.EXIT && goodPass(parsed[1]): connectedSockets.clear(); return kill(responses.DISCONNECT)
-                case parsed[0] == bits.HEARTBEAT: console.log("Heartbeat received".bgGreen.white, parsed[1]); return heartBeats.delete(parsed[1]) ? 1 : socket.end(responses.DISCONNECT)
+                case parsed[0] == bits.HEARTBEAT: console.log("Heartbeat received".bgGreen.white, parsed[1]); return heartBeats.has(parsed[1]) ? heartBeats.delete(parsed[1]) : kill(responses.DISCONNECT)
                 case parsed[0] == bits.LOGIN: return broadcast([parsed[0], ...parsed.splice(2, 2)], socket, parsed[1])
 
                 case parsed[0] == bits.ADD_WORKER: connectedSockets.set(socket, crypto.createHash('sha256').update(parsed[1]).digest('base64')); return write(responses.OK, socket)
