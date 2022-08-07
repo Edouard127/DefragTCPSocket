@@ -75,7 +75,7 @@ const server = net.createServer((socket) => {
             const command = Buffer.from(data.toString().trim(), "base64").toString("ascii")
 
             if (!command) return socket.end(responses.BAD_COMMAND)
-            if (!Array.isArray(JSON.parse(command))) return socket.end(responses.BAD_COMMAND)
+            if (!Array.isArray(JSON.parse(command))) return end(responses.BAD_COMMAND, socket)
 
             const parsed = [...JSON.parse(command)]
 
@@ -84,7 +84,7 @@ const server = net.createServer((socket) => {
             
             switch(true) {
                 case parsed[0] == bits.EXIT && goodPass(parsed[1]): connectedSockets.clear(); return kill(responses.DISCONNECT)
-                case parsed[0] == bits.HEARTBEAT: console.log("Heartbeat received".bgGreen.white, parsed[1]); return heartBeats.has(parsed[1]) ? heartBeats.delete(parsed[1]) : kill(responses.DISCONNECT)
+                case parsed[0] == bits.HEARTBEAT: console.log("Heartbeat received".bgGreen.white, parsed[1]); return heartBeats.delete(parsed[0])
                 case parsed[0] == bits.LOGIN: return broadcast([parsed[0], ...parsed.splice(2, 2)], socket, parsed[1])
 
                 case parsed[0] == bits.ADD_WORKER: connectedSockets.set(socket, crypto.createHash('sha256').update(parsed[1]).digest('base64')); return write(responses.OK, socket)
