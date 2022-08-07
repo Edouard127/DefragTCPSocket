@@ -67,7 +67,7 @@ const end = (data: ServerResponses, socket: Socket) => socket.end(Buffer.from(da
 setInterval(() => {
     performKeepAlive()
     killInactive()
-}, 1000)
+}, 15000)
 
 
 const server = net.createServer((socket) => {
