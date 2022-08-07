@@ -93,7 +93,16 @@ const server = net.createServer((socket) => {
                 case parsed[0] == bits.MOD_COMMAND: return broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1])
                 default: return end(responses.BAD_COMMAND, socket)
             }
-
+    })
+    socket.on("close", () => {
+        connectedSockets.delete(socket)
+        heartBeats.clear()
+        console.log("Connection closed".bgRed.white)
+    })
+    socket.on("error", () => {
+        connectedSockets.delete(socket)
+        heartBeats.clear()
+        console.log("Connection closed".bgRed.white)
     })
     socket.on("error", (e) => {
         console.log(e)
