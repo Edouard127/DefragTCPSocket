@@ -52,6 +52,7 @@ const performKeepAlive = () => {
 const killInactive = () => {
     heartBeats.forEach((k) => {
         if (new Date().getTime() - k.TIME > 20000 ) {
+            console.log("Killing inactive connection".bgRed.white)
             end(responses.TIMEOUT, k.PONG.socket)
         }
         heartBeats.delete(k)
