@@ -32,7 +32,7 @@ If you use a strong password, or the default randomly generated password, it is 
 
 #### Why my game is crashing ?
 
-Probably because kotlin & java is not my preferred language & not the one I know the most
+Probably because kotlin & java are not my preferred language & not the one I know the most
 
 
 ## Useful informations
