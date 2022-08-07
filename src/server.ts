@@ -73,10 +73,7 @@ setInterval(() => {
 
 const server = net.createServer((socket) => {
     socket.on("data", (data) => {
-            console.log(data.toString())
-
             const command = Buffer.from(data.toString().trim(), "base64").toString("ascii")
-            console.log("Command:", command)
 
             if (!command) return socket.end(responses.BAD_COMMAND)
 
