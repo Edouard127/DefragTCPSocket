@@ -18,7 +18,6 @@ const goodPass = (password: string) => {
     const keys = pKey(password)
     var valid = false
     keys.forEach((k) => {
-        console.log(k)
         if (k[1] === crypto.createHash('sha256').update(password).digest('base64')) {
             valid = true
         }
@@ -30,7 +29,6 @@ const pKey = (p: string) => [...connectedSockets.entries()].filter(v => v[1] ===
 
 const broadcast = (data: Array<string>, sender: Socket, password: string) => {
     connectedSockets.forEach((_, socket) => {
-        console.log(_)
         if (socket !== sender && goodPass(password)) {
             socket.setEncoding('utf8');
             write(data.toString().replace(/,/g, " "), socket);
@@ -83,8 +81,6 @@ const server = net.createServer((socket) => {
             const parsed = [...JSON.parse(command)]
 
             const args = [...parsed].slice(2)
-            console.log(parsed, args)
-            console.log(parsed[0] == bits.CHAT)
             
             switch(true) {   
                 case parsed[0] == bits.EXIT && goodPass(parsed[1]): connectedSockets.clear(); return kill(responses.DISCONNECT)

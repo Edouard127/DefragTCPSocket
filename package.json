@@ -25,6 +25,7 @@
   "homepage": "https://github.com/Edouard127/DefragTCPSocket#readme",
   "dependencies": {
     "colors": "^1.4.0",
-    "tsc": "^2.0.4"
+    "tsc": "^2.0.4",
+    "typescript": "^4.7.4"
   }
 }
