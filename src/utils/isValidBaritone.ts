@@ -3,6 +3,7 @@ export const isValidBaritone = (data: Array<String>) => isValid(data)
 const commands = {
     thisway: ["thisway", 1],
     goal: ["goal", 3],
+    goto: ["goto", 3],
     path: ["path", 0],
     cancel: ["cancel", 0],
     stop: ["stop", 0],
