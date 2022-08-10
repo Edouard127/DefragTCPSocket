@@ -92,6 +92,7 @@ const server = net.createServer((socket) => {
                 case parsed[0] == bits.CHAT: return broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1])
                 case parsed[0] == bits.BARITONE: return isValidBaritone(args) ? broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1]) : write(responses.BAD_ARGUMENTS, socket)
                 case parsed[0] == bits.MOD_COMMAND: return broadcast([parsed[0], ...parsed.splice(2)], socket, parsed[1])
+                case parsed[0] == bits.ERROR_MESSAGE: return write(responses.CLIENT_ERROR, socket)
                 default: return end(responses.BAD_COMMAND, socket)
             }
     })

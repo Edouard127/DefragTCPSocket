@@ -8,4 +8,5 @@ export const bits = {
     CHAT: "6",
     BARITONE: "7",
     MOD_COMMAND: "8",
+    ERROR_MESSAGE: "9",
 } as const;

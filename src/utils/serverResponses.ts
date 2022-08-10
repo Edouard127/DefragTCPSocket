@@ -9,6 +9,9 @@ export const responses = {
     BAD_ARGUMENTS: "6",
     BAD_PASSWORD: "7",
     WORKER_NOT_FOUND: "8",
+    WORKER_ALREADY_EXISTS: "9",
+    WORKER_ALREADY_LOGGED_IN: "10",
+    CLIENT_ERROR: "11",
 } as const;
 
 export type ServerResponses = typeof responses[keyof typeof responses];
