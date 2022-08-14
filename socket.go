@@ -118,19 +118,19 @@ type Client struct {
 }
 
 var Packets = map[string]byte {
-	"EXIT": 0x00,				  // user->server<->client
-	"OK": 0x01,							// client<->server
-	"HEARTBEAT": 0x02,			        // client<->server
-	"LOGIN": 0x03,				  // user->server<->client
-	"LOGOUT": 0x04,				  // user->server<->client
-	"ADD_WORKER": 0x05,			 // user<->server<->client
-	"REMOVE_WORKER": 0x06,		 // user<->server<->client
-	"GET_WORKERS": 0x07,		 // user<->server<->client
-	"GET_WORKER_STATUS": 0x08,	 // user<->server<->client
-	"CHAT": 0x09,				  // user->server<->client
-	"BARITONE": 0xA0,			  // user->server<->client
-	"LAMBDA": 0xA1,				  // user->server<->client
-	"ERROR": 0xA2,				 // client<->server<->user
+	"EXIT": 0x00,				// user->server<->client
+	"OK": 0x01,					// client<->server
+	"HEARTBEAT": 0x02,			// client<->server
+	"LOGIN": 0x03,				// user->server<->client
+	"LOGOUT": 0x04,				// user->server<->client
+	"ADD_WORKER": 0x05,			// user<->server<->client
+	"REMOVE_WORKER": 0x06,		// user<->server<->client
+	"GET_WORKERS": 0x07,		// user<->server<->client
+	"GET_WORKER_STATUS": 0x08,	// user<->server<->client
+	"CHAT": 0x09,				// user->server<->client
+	"BARITONE": 0xA0,			// user->server<->client
+	"LAMBDA": 0xA1,				// user->server<->client
+	"ERROR": 0xA2,				// client<->server<->user
 }
 
 
