@@ -1,19 +1,18 @@
 package main
 
 import (
-    "fmt"
-    "net"
-    "os"
+	"fmt"
 	"log"
-	"github.com/fatih/color"
+	"net"
+	"os"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
-
 const (
-    HOST = "localhost"
-    PORT = "1984"
-    TYPE = "tcp"
+	HOST = "localhost"
+	PORT = "1984"
 )
 
 func main() {
@@ -22,8 +21,12 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	defer listener.Close()
+	defer func(listener net.Listener) {
+		err := listener.Close()
+		if err != nil {
 
+		}
+	}(listener)
 	color.Cyan("Listening on " + HOST + ":" + PORT)
 
 	for {
@@ -38,10 +41,10 @@ func main() {
 
 func handleRequest(conn net.Conn) {
 	buffer := make([]byte, 1024)
-    _, err := conn.Read(buffer)
-    if err != nil {
-        log.Fatal(err)
-    }
+	_, err := conn.Read(buffer)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	color.Green("Connection etablished to: " + conn.RemoteAddr().String())
 
@@ -53,11 +56,14 @@ func handleRequest(conn net.Conn) {
 	command := ClientCommands{toByte(request[0]), args}
 
 	switch GetNumber(command.Byte) {
-		case 0x04:
-			client := Client{getString(args[0]), conn, getString(args[1])}
-			clients = append(clients, &client)
-			fmt.Println(client)
-			conn.Write([]byte{Packets["OK"]})
+	case 0x04:
+		client := Client{getString(args[0]), conn, getString(args[1])}
+		clients = append(clients, &client)
+		fmt.Println(client)
+		_, err := conn.Write([]byte{Packets["OK"]})
+		if err != nil {
+			return
+		}
 		break
 	}
 
@@ -65,7 +71,10 @@ func handleRequest(conn net.Conn) {
 
 func broadcast(message []byte) {
 	for client := range clients {
-		clients[client].Conn.Write(message)
+		_, err := clients[client].Conn.Write(message)
+		if err != nil {
+			return
+		}
 	}
 }
 
@@ -91,15 +100,11 @@ func getArgs(args []string) [][]byte {
 func getString(args []byte) string {
 	var s string
 	for _, v := range args {
+
 		s += string(v)
 	}
 	return s
 }
-
-
-
-	
-
 
 // Get number from byte
 func GetNumber(s byte) int {
@@ -117,22 +122,21 @@ type Client struct {
 	Password string
 }
 
-var Packets = map[string]byte {
-	"EXIT": 					0x00, // user->server->client Notifies the client that the server is closing the connection.
-	"OK": 						0x01, // client<->server Notifies the client that the server is ready to receive the next packet.
-	"HEARTBEAT": 				0x02, // client<->server Ping packet.
-	"LOGIN": 					0x03, // user->server<->client Notifies the server that the client is trying to login.
-	"LOGOUT": 					0x04, // user->server<->client Notifies the server that the client is trying to logout.
-	"ADD_WORKER": 				0x05, // client<->server Notifies the server of a new worker.
-	"REMOVE_WORKER": 			0x06, // user<->server<->client Notifies the server that a worker has been removed.
-	"GET_WORKERS": 				0x07, // user<->server<->client Notifies the server that the user wants to get the list of workers.
-	"GET_WORKER_STATUS": 		0x08, // user<->server<->client Notifies the server that the user wants to get the status of a worker.
-	"CHAT": 					0x09, // user->server<->client Notifies the server that the user wants to send a chat message.
-	"BARITONE": 				0xA0, // user->server<->client Notifies the server that the user wants to send a baritone command.
-	"LAMBDA": 					0xA1, // user->server<->client Notifies the server that the user wants to send a lambda command.
-	"ERROR": 					0xA2, // client<->server<->user Notifies the user that the server or the client has encountered an error.
+var Packets = map[string]byte{
+	"EXIT":              0x00, // user->server->client Notifies the client that the server is closing the connection.
+	"OK":                0x01, // client<->server Notifies the client that the server is ready to receive the next packet.
+	"HEARTBEAT":         0x02, // client<->server Ping packet.
+	"LOGIN":             0x03, // user->server<->client Notifies the server that the client is trying to login.
+	"LOGOUT":            0x04, // user->server<->client Notifies the server that the client is trying to logout.
+	"ADD_WORKER":        0x05, // client<->server Notifies the server of a new worker.
+	"REMOVE_WORKER":     0x06, // user<->server<->client Notifies the server that a worker has been removed.
+	"GET_WORKERS":       0x07, // user<->server<->client Notifies the server that the user wants to get the list of workers.
+	"GET_WORKER_STATUS": 0x08, // user<->server<->client Notifies the server that the user wants to get the status of a worker.
+	"CHAT":              0x09, // user->server<->client Notifies the server that the user wants to send a chat message.
+	"BARITONE":          0xA0, // user->server<->client Notifies the server that the user wants to send a baritone command.
+	"LAMBDA":            0xA1, // user->server<->client Notifies the server that the user wants to send a lambda command.
+	"ERROR":             0xA2, // client<->server<->user Notifies the user that the server or the client has encountered an error.
 }
-
 
 type ServerResponse struct {
 	// Data of the packet.
@@ -154,8 +158,3 @@ func (c *ClientCommands) GetPacketName() string {
 	}
 	return "ERROR"
 }
-	
-
-
-
-	
