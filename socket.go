@@ -39,20 +39,40 @@ func main() {
 }
 
 func handleRequest(conn net.Conn) {
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, 32)
+
 	_, err := conn.Read(buffer)
 	if err != nil {
 		log.Fatal(err)
+	}
+	// Slice the buffer if byte 0 is found.
+	for b := range buffer {
+		fmt.Println(b)
+		if buffer[b] == 0 {
+			buffer = buffer[:b]
+			break
+		}
+	}
+	// Check if the buffer is empty.
+	if len(buffer) == 0 {
+		conn.Write([]byte{Packets["ERROR"]})
+		conn.Close()
 	}
 
 	color.Green("Connection etablished to: " + conn.RemoteAddr().String())
 
 	// Store the request data in a splited array.
-	request := strings.Split(string(buffer), " ")
+	request := strings.Fields(string(buffer))
 	// Store the arguments of the request
 	args := getArgs(request[1:])
 	// Store the command in a ClientCommands struct.
 	command := ClientCommands{toByte(request[0]), args}
+
+	// Check if the argument at the index 1 contains not null bytes.
+	if args[1] != nil {
+		// If it does, convert it to a string.
+		args[1] = []byte(getString(args[1]))
+	}
 
 	switch GetNumber(command.Byte) {
 	case 0x04:
@@ -148,7 +168,7 @@ type ClientCommands struct {
 	Args [][]byte
 }
 
-// Get the packet name from the ClientCommands byte.
+// GetPacketName Get the packet name from the ClientCommands byte.
 func (c *ClientCommands) GetPacketName() string {
 	for k, v := range Packets {
 		if v == c.Byte {
