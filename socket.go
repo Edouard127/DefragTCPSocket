@@ -118,19 +118,19 @@ type Client struct {
 }
 
 var Packets = map[string]byte {
-	"EXIT": 0x00,				// user->server<->client
-	"OK": 0x01,					// client<->server
-	"HEARTBEAT": 0x02,			// client<->server
-	"LOGIN": 0x03,				// user->server<->client
-	"LOGOUT": 0x04,				// user->server<->client
-	"ADD_WORKER": 0x05,			// user<->server<->client
-	"REMOVE_WORKER": 0x06,		// user<->server<->client
-	"GET_WORKERS": 0x07,		// user<->server<->client
-	"GET_WORKER_STATUS": 0x08,	// user<->server<->client
-	"CHAT": 0x09,				// user->server<->client
-	"BARITONE": 0xA0,			// user->server<->client
-	"LAMBDA": 0xA1,				// user->server<->client
-	"ERROR": 0xA2,				// client<->server<->user
+	"EXIT": 					0x00, // user->server->client Notifies the client that the server is closing the connection.
+	"OK": 						0x01, // client<->server Notifies the client that the server is ready to receive the next packet.
+	"HEARTBEAT": 				0x02, // client<->server Ping packet.
+	"LOGIN": 					0x03, // user->server<->client Notifies the server that the client is trying to login.
+	"LOGOUT": 					0x04, // user->server<->client Notifies the server that the client is trying to logout.
+	"ADD_WORKER": 				0x05, // client<->server Notifies the server of a new worker.
+	"REMOVE_WORKER": 			0x06, // user<->server<->client Notifies the server that a worker has been removed.
+	"GET_WORKERS": 				0x07, // user<->server<->client Notifies the server that the user wants to get the list of workers.
+	"GET_WORKER_STATUS": 		0x08, // user<->server<->client Notifies the server that the user wants to get the status of a worker.
+	"CHAT": 					0x09, // user->server<->client Notifies the server that the user wants to send a chat message.
+	"BARITONE": 				0xA0, // user->server<->client Notifies the server that the user wants to send a baritone command.
+	"LAMBDA": 					0xA1, // user->server<->client Notifies the server that the user wants to send a lambda command.
+	"ERROR": 					0xA2, // client<->server<->user Notifies the user that the server or the client has encountered an error.
 }
 
 
