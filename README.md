@@ -2,11 +2,16 @@
 # Defrag TCP Socket Golang
 
 
-## Installation // Soon
+## Installation
 
+If you have already installed golang, you can skip this step. \
+Install golang : https://go.dev/dl/ \
+Add go to PATH : https://golang.org/doc/install/source#environment
 
 ```bash
-  
+git clone https://github.com/Edouard127/DefragTCPSocket.git
+cd DefragTCPSocket
+go build
 ```
 
 
@@ -35,20 +40,37 @@ Probably because kotlin & java are not my preferred language & not the one I kno
 Because I started using golang 2 days ago :trollface:
 
 
-## Useful informations
+## Useful information
 
 #### Data transfers
 
-Data sent through the socket is sent to each workers connected to the socket.
-The data sent is a encoded struct of ClientCommand
+Data sent through the socket is sent to each worker connected to the socket.
+The data sent is a encoded struct of ClientCommand:
+
+```go
+type ClientCommand struct {
+	Command string
+	Data    [][]byte
+}
+```
 
 
 #### Register a new worker
 
-// TODO
+```go
+type Client struct {
+	// The name of the client.
+	Name string
+	// The connection to the client.
+	Conn net.Conn
+	// The password of the client.
+	Password string
+}
+```
 
 
-[Packets]([^1]):
+
+Packets:
 
 - 0x00 Exit and kill all the workers processes
 - 0x01 OK Packet.
@@ -67,15 +89,17 @@ The data sent is a encoded struct of ClientCommand
 
 #### Protocol
 
-Each [packets]([^1]) sent must match the hardcoded protocol, a documentation will soon be available
+Each packet sent must match the hardcoded protocol, a documentation will soon be available
 
 ```
-[Packet[^1]]
+[Packet]
 [Number of arguments]
 [Offsets] Example: Offsets of 5, 8 // Not in use yet but required
 [Length] Length of the packet // Not in use yet but required
 [Data...] The number of arguments must match the number of arguments
 ```
+
+
 
 
 ## Examples
