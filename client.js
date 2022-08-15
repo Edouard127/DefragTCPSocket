@@ -5,8 +5,11 @@ const client = net.createConnection({
     port: 1984
 }, () => {
     console.log("connected to server")
-    client.write("5 Kamigen password")
+    //client.write(Buffer.from("5 70 1 1 Kamigen password"))
+    process.stdin.pipe(client)
     client.on("data", (data) => {
-        console.log(data.toString().charCodeAt(0))
+        console.log(data.toString())
     })
 })
+// Send hello in bytes
+

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"github.com/fatih/color"
 	"log"
@@ -65,19 +67,39 @@ func handleRequest(conn net.Conn) {
 	command := ClientCommands{toByte(request[0]), args}
 	fmt.Println(getByteNumber(toByte(request[1])), getByteNumber(toByte(request[2])), getByteNumber(toByte(request[3])))
 	fmt.Println(command.GetPacketName(), command)
+	fmt.Println(int(getByteNumber(toByte(request[1]))), len(command.Args))
+
+	// Check if the packet is valid.
+	if int(getByteNumber(toByte(request[1]))) != len(command.Args) {
+		conn.Write([]byte{Packets["ERROR"]})
+		conn.Close()
+		return
+	}
+	if command.GetPacketName() == "ERROR" {
+		conn.Write([]byte{Packets["ERROR"]})
+		conn.Close()
+		return
+	}
 
 	switch getByteNumber(command.Byte) {
 	case 0x05:
 		// Register the client
 		client := Client{getString(args[0]), conn, getString(args[1])}
 		clients = append(clients, &client)
-		fmt.Println(client)
-		_, err := conn.Write([]byte{Packets["OK"]})
-		if err != nil {
-			log.Fatal(err)
-			return
+	case 0x06:
+		// Remove client
+		for i, v := range clients {
+			if v.Name == getString(args[0]) {
+				clients = append(clients[:i], clients[i+1:]...)
+			}
 		}
-		break
+	default:
+		for i, v := range clients {
+			if v.Name == getString(args[0]) {
+				clients[i].Conn.Write(encode(command))
+			}
+		}
+
 	}
 
 }
@@ -87,13 +109,13 @@ func keepAlive() {
 	for {
 		for client := range clients {
 			clients[client].Conn.SetDeadline(time.Now().Add(time.Second * 5))
-			_, err := clients[client].Conn.Write([]byte{Packets["HEARTBEAT"]})
+			_, err := clients[client].Conn.Write([]byte{Packets["KEEPALIVE"]})
 			if err != nil {
 				clients = append(clients[:client], clients[client+1:]...)
 				return
 			}
 		}
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 10)
 	}
 }
 
@@ -104,6 +126,16 @@ func broadcast(message []byte) {
 			return
 		}
 	}
+}
+
+func encode(data interface{}) []byte {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(data)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return buf.Bytes()
 }
 
 func toByte(s string) byte {
@@ -136,7 +168,7 @@ func getString(args []byte) string {
 
 // Get number from byte
 func getByteNumber(s byte) byte {
-	return s - 0x2C
+	return s - 0x30
 }
 
 var clients []*Client
