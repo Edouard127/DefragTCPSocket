@@ -59,14 +59,16 @@ func handleRequest(conn net.Conn) {
 	// Store the request data in a splited array.
 	request := strings.Fields(string(buffer))
 	// Store the arguments of the request
-	args := getArgs(request[1:])
+	args := getArgs(request[4:])
+	// TODO: Get more arguments from the request.
 	// Store the command in a ClientCommands struct.
 	command := ClientCommands{toByte(request[0]), args}
-
+	fmt.Println(getByteNumber(toByte(request[1])), getByteNumber(toByte(request[2])), getByteNumber(toByte(request[3])))
 	fmt.Println(command.GetPacketName(), command)
 
 	switch getByteNumber(command.Byte) {
 	case 0x05:
+		// Register the client
 		client := Client{getString(args[0]), conn, getString(args[1])}
 		clients = append(clients, &client)
 		fmt.Println(client)
