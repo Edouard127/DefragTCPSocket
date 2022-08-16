@@ -62,7 +62,7 @@ func handleRequest(conn net.Conn) {
 	args := getArgs(request[4:])
 	// TODO: Get more arguments from the request.
 	// Store the command in a ClientCommands struct.
-	command := ClientCommands{toByte(request[0]), args}
+	command := ClientCommand{toByte(request[0]), args}
 	fmt.Println(getByteNumber(toByte(request[1])), getByteNumber(toByte(request[2])), getByteNumber(toByte(request[3])))
 	fmt.Println(command.GetPacketName(), command)
 
@@ -184,7 +184,7 @@ type ServerResponse struct {
 	// Data of the packet.
 	Data []byte
 }
-type ClientCommands struct {
+type ClientCommand struct {
 	// The byte of the command.
 	Byte byte
 	// The arguments of the command.
@@ -192,7 +192,7 @@ type ClientCommands struct {
 }
 
 // GetPacketName Get the packet name from the ClientCommands byte.
-func (c *ClientCommands) GetPacketName() string {
+func (c *ClientCommand) GetPacketName() string {
 	for k, v := range Packets {
 		if v == getByteNumber(c.Byte) {
 			return k
