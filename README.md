@@ -60,9 +60,9 @@ type ClientCommand struct {
 ```go
 type Client struct {
 	// The name of the client.
-	Name string
+	Name    string
 	// The connection to the client.
-	Conn net.Conn
+	Conn    net.Conn
 	// The password of the client.
 	Password string
 }
@@ -76,7 +76,7 @@ Packets:
 - 0x01 OK Packet.
 - 0x02 Heartbeat. This will make sure that all the workers are connected and respond to the socket. If they don't respond, the client will be removed
 - 0x03 Login. This will send a server IP or hostname with the port to the specified workers connected to the socket. (WIP)
-- 0x04 Logout. This will make all the workers logout from the server. (WIP)
+- 0x04 Logout. This will make all the workers logout from the server. (WIP)
 - 0x05 Add a new worker. This will register a new worker, they will receive a heartbeat every 10 seconds.
 - 0x06 Remove a worker. This will remove the worker from the socket. If the client is not found or the password does not match, the server will respond with 0x0C
 - 0x07 Get a worker data. If the client is not found or the password does not match, the server will respond with 0x0C
