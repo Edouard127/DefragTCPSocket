@@ -55,6 +55,22 @@ func handleRequest(conn net.Conn) {
 		conn.Write([]byte{Packets["ERROR"]})
 		conn.Close()
 	}
+	
+	/*
+		TODO Check if the command is valid.
+		TODO Check if the arguments are valid.
+		TODO: Check if the command is valid.
+			if int(getByteNumber(toByte(request[1]))) != len(command.Args) {
+				conn.Write([]byte{Packets["ERROR"]})
+				conn.Close()
+				return
+			}
+			if command.GetPacketName() == "ERROR" {
+				conn.Write([]byte{Packets["ERROR"]})
+				conn.Close()
+				return
+			}
+	*/
 
 	// Store the request data in a splited array.
 	request := strings.Fields(string(buffer))
