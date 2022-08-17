@@ -86,6 +86,7 @@ func handleRequest(conn net.Conn) {
 	}
 	fmt.Println(intV, byte(intV), err)
 	fmt.Println(command.GetPacketName(), command)
+	message := AArrayByteToArrByte(getArgs(request))
 
 	switch command.Byte {
 	case 0x05:
@@ -96,16 +97,16 @@ func handleRequest(conn net.Conn) {
 		client := Client{name, conn, password}
 		clients = append(clients, &client)
 		fmt.Println(client)
-		_, err := conn.Write([]byte{Packets["OK"]})
+		_, err := conn.Write(message)
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
+		conn.Write([]byte{'\n'})
 		break
 	case 0x09:
 		// Send chat message
 		// Get the message from the arguments and add them to a byte array with a space between them.
-		message := AArrayByteToArrByte(getArgs(request))
 		fmt.Println("Broadcasting:", string(message))
 		c := getClient(string(args[0]))
 		i, e := c.Conn.Write(message)
@@ -147,7 +148,6 @@ func broadcast(message []byte) {
 func getArgs(args []string) [][]byte {
 	var b [][]byte
 	for _, v := range args {
-		fmt.Println([]byte(v))
 		b = append(b, []byte(v))
 	}
 	return b
