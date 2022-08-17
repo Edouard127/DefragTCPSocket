@@ -36,7 +36,7 @@ func main() {
 		}
 
 		// Execute the keepAlive function in a new goroutine
-		go keepAlive()
+		// go keepAlive()
 		// Execute the handleRequest function in a new goroutine
 		go handleRequest(conn)
 	}
@@ -107,12 +107,14 @@ func handleRequest(conn net.Conn) {
 		// Get the message from the arguments and add them to a byte array with a space between them.
 		message := AArrayByteToArrByte(getArgs(request))
 		fmt.Println("Broadcasting:", string(message))
-		c, err := getClient(string(args[0])).Conn.Write(message)
-		if err != nil {
-			log.Fatal(err)
-			return
+		c := getClient(string(args[0]))
+		i, e := c.Conn.Write(message)
+		if e != nil {
+			fmt.Println(e)
 		}
-		fmt.Println("Bytes sent:", c)
+		c.Conn.Write([]byte{'\n'})
+
+		fmt.Println("Bytes sent:", i)
 		break
 	}
 
@@ -145,13 +147,14 @@ func broadcast(message []byte) {
 func getArgs(args []string) [][]byte {
 	var b [][]byte
 	for _, v := range args {
+		fmt.Println([]byte(v))
 		b = append(b, []byte(v))
 	}
 	return b
 }
-func AArrayByteToArrByte(a [][]byte) []byte {
+func AArrayByteToArrByte(arr [][]byte) []byte {
 	var b []byte
-	for _, v := range a {
+	for _, v := range arr {
 		b = append(b, v...)
 		b = append(b, ' ')
 	}
@@ -164,7 +167,7 @@ var clients []*Client
 func getClient(name string) *Client {
 	for _, v := range clients {
 		if v.Name == name {
-			return &*v
+			return v
 		}
 	}
 	return &Client{}
