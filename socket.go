@@ -5,6 +5,7 @@ import (
 	"github.com/fatih/color"
 	"log"
 	"net"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -55,7 +56,7 @@ func handleRequest(conn net.Conn) {
 		conn.Write([]byte{Packets["ERROR"]})
 		conn.Close()
 	}
-	
+
 	/*
 		TODO Check if the command is valid.
 		TODO Check if the arguments are valid.
@@ -75,17 +76,24 @@ func handleRequest(conn net.Conn) {
 	// Store the request data in a splited array.
 	request := strings.Fields(string(buffer))
 	// Store the arguments of the request
-	args := getArgs(request[4:])
+	args := getArgs(request[1:])
 	// TODO: Get more arguments from the request.
+	intV, err := strconv.Atoi(request[0])
 	// Store the command in a ClientCommands struct.
-	command := ClientCommand{toByte(request[0]), args}
-	fmt.Println(getByteNumber(toByte(request[1])), getByteNumber(toByte(request[2])), getByteNumber(toByte(request[3])))
+	command := ClientCommand{byte(intV), args}
+	for _, v := range args {
+		fmt.Println(string(v))
+	}
+	fmt.Println(intV, byte(intV), err)
 	fmt.Println(command.GetPacketName(), command)
 
-	switch getByteNumber(command.Byte) {
+	switch command.Byte {
 	case 0x05:
 		// Register the client
-		client := Client{getString(args[0]), conn, getString(args[4])}
+		// Remove whitespaces from the name.
+		name := strings.TrimSpace(string(args[0]))
+		password := strings.TrimSpace(string(args[1]))
+		client := Client{name, conn, password}
 		clients = append(clients, &client)
 		fmt.Println(client)
 		_, err := conn.Write([]byte{Packets["OK"]})
@@ -97,9 +105,14 @@ func handleRequest(conn net.Conn) {
 	case 0x09:
 		// Send chat message
 		// Get the message from the arguments and add them to a byte array with a space between them.
-		message := AArrayByteToArrByte(args)
-		fmt.Println("Broadcasting:", message)
-		broadcast([]byte{Packets["CHAT"], message})
+		message := AArrayByteToArrByte(getArgs(request))
+		fmt.Println("Broadcasting:", string(message))
+		c, err := getClient(string(args[0])).Conn.Write(message)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+		fmt.Println("Bytes sent:", c)
 		break
 	}
 
@@ -129,18 +142,6 @@ func broadcast(message []byte) {
 	}
 }
 
-func toByte(s string) byte {
-	return byte(s[0])
-}
-
-func toByteArray(s []string) []byte {
-	var b []byte
-	for _, v := range s {
-		b = append(b, toByte(v))
-	}
-	return b
-}
-
 func getArgs(args []string) [][]byte {
 	var b [][]byte
 	for _, v := range args {
@@ -148,28 +149,26 @@ func getArgs(args []string) [][]byte {
 	}
 	return b
 }
-func getString(args []byte) string {
-	var s string
-	for _, v := range args {
-
-		s += string(v)
-	}
-	return s
-}
-func AArrayByteToArrByte(a [][]byte) byte {
-	var b byte
+func AArrayByteToArrByte(a [][]byte) []byte {
+	var b []byte
 	for _, v := range a {
-		b += v[0]
+		b = append(b, v...)
+		b = append(b, ' ')
 	}
 	return b
 }
 
-// Get number from byte
-func getByteNumber(s byte) byte {
-	return s - 0x2C
-}
-
 var clients []*Client
+
+// Get pointer of struct by name
+func getClient(name string) *Client {
+	for _, v := range clients {
+		if v.Name == name {
+			return &*v
+		}
+	}
+	return &Client{}
+}
 
 type Client struct {
 	// The name of the client.
@@ -196,10 +195,6 @@ var Packets = map[string]byte{
 	"ERROR":             0x0C, // client<->server<->user Notifies the user that the server or the client has encountered an error.
 }
 
-type ServerResponse struct {
-	// Data of the packet.
-	Data []byte
-}
 type ClientCommand struct {
 	// The byte of the command.
 	Byte byte
@@ -210,7 +205,7 @@ type ClientCommand struct {
 // GetPacketName Get the packet name from the ClientCommands byte.
 func (c *ClientCommand) GetPacketName() string {
 	for k, v := range Packets {
-		if v == getByteNumber(c.Byte) {
+		if v == c.Byte {
 			return k
 		}
 	}
