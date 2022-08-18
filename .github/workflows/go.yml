@@ -1,8 +1,6 @@
 name: Go
 
 on: [push, pull_request]
-env:
-  BUILD_DIR: build
 jobs:
   Build:
     strategy:
@@ -25,16 +23,16 @@ jobs:
       run: go mod verify
 
     - name: Create build directory
-      run: mkdir $BUILD_DIR
+      run: mkdir build
 
     - name: LS
       run: ls .
 
     - name: Build
-      run: go build -o ./$BUILD_DIR/${{ runner.os }}-server .
+      run: go build -o ./build/${{ runner.os }}-server .
 
     - name: LS
-      run: ls ./$BUILD_DIR/
+      run: ls ./build/
 
     - name: Run go vet
       run: go vet .
@@ -46,4 +44,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: Releases
-        path: ./$BUILD_DIR/${{ runner.os }}-server*
+        path: ./build/${{ runner.os }}-server
