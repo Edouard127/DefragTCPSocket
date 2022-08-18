@@ -35,7 +35,7 @@ jobs:
       run: mkdir -p ./artifact
       
     - name: Insert compiled
-      run: cat ./server > ./artifact/server
+      run: cat ./../server > ./artifact/server
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v3
