@@ -35,10 +35,10 @@ jobs:
       run: mkdir build
 
     - name: Send to directory
-      run: mv ./${{ runner.os }}-server ./build/
+      run: mv ./${{ runner.os }}-server* ./build/
       
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: server
-        path: ./build/${{ runner.os }}-server
+        name: Releases
+        path: ./build/${{ runner.os }}-server*
