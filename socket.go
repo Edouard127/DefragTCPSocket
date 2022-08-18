@@ -36,7 +36,7 @@ func main() {
 		}
 
 		// Execute the keepAlive function in a new goroutine
-		// go keepAlive()
+		go keepAlive()
 		// Execute the handleRequest function in a new goroutine
 		go handleRequest(conn)
 	}
@@ -44,6 +44,7 @@ func main() {
 
 func handleRequest(conn net.Conn) {
 	color.New(color.FgGreen, color.Bold).Println("New connection from:", conn.RemoteAddr().String())
+	listeners = append(listeners, &conn)
 	buffer := make([]byte, 1024)
 
 	i, err := conn.Read(buffer)
@@ -104,7 +105,28 @@ func handleRequest(conn net.Conn) {
 		}
 		conn.Write([]byte{'\n'})
 		break
+	case 0x07:
+		// Broadcast the message to all listeners.
+		c := getClient(string(args[0]))
+		_, e := c.Conn.Write(message)
+		if e != nil {
+			fmt.Println(e)
+		}
+		c.Conn.Write([]byte{'\n'})
 	case 0x09:
+		// Send chat message
+		// Get the message from the arguments and add them to a byte array with a space between them.
+		fmt.Println("Broadcasting:", string(message))
+		c := getClient(string(args[0]))
+		i, e := c.Conn.Write(message)
+		if e != nil {
+			fmt.Println(e)
+		}
+		c.Conn.Write([]byte{'\n'})
+
+		fmt.Println("Bytes sent:", i)
+		break
+	case 0x0A:
 		// Send chat message
 		// Get the message from the arguments and add them to a byte array with a space between them.
 		fmt.Println("Broadcasting:", string(message))
@@ -126,7 +148,7 @@ func keepAlive() {
 	for {
 		for client := range clients {
 			clients[client].Conn.SetDeadline(time.Now().Add(time.Second * 5))
-			_, err := clients[client].Conn.Write([]byte{Packets["HEARTBEAT"]})
+			_, err := clients[client].Conn.Write([]byte{'\n'})
 			if err != nil {
 				clients = append(clients[:client], clients[client+1:]...)
 				return
@@ -142,6 +164,16 @@ func broadcast(message []byte) {
 		if err != nil {
 			return
 		}
+	}
+}
+
+func broadcastListeners(message []byte) {
+	for _, v := range listeners {
+		_, err := (*v).Write(message)
+		if err != nil {
+			return
+		}
+		(*v).Write([]byte{'\n'})
 	}
 }
 
@@ -162,6 +194,7 @@ func AArrayByteToArrByte(arr [][]byte) []byte {
 }
 
 var clients []*Client
+var listeners []*net.Conn
 
 // Get pointer of struct by name
 func getClient(name string) *Client {
