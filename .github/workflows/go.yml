@@ -76,3 +76,37 @@ jobs:
         with:
           name: Releases
           path: ./build/${{ runner.os }}-server.exe
+  Graph:
+    strategy:
+      matrix:
+        go-version: [ 1.19.x ]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+      - uses: actions/checkout@v3
+
+      - name: Install godegraph
+        run: go get -u github.com/godegraph/godegraph
+
+      - name: Install dot
+        run: apt install graphviz
+
+      - name: Generate graph
+        run: godepgraph kamigen/socket | dot -Tpng -o godepgraph.png
+
+      - name: Create README.md
+        run: echo "![godepgraph](./godepgraph.png)" > README.md
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: README.md
+          path: ./README.md

@@ -110,3 +110,8 @@ node client.js
 ```
 
 Video: SOON
+
+Packages graph:
+
+![graph](./godepgraph.png)
+
