@@ -1,35 +1,54 @@
-name: Go
+name: Audit
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
 jobs:
-  build:
-    strategy:
-      matrix:
-        go-version: [1.19.x]
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+
+  audit:
+    runs-on: [ubuntu-latest, windows-latest]
     steps:
-    - uses: actions/cache@v3
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
       with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-go-
-    - uses: actions/setup-go@v3
+        go-version: 1.19.x
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Run go vet
+      run: go vet ./...
+
+    - name: Install staticcheck
+      run: go install honnef.co/go/tools/cmd/staticcheck@latest
+
+    - name: Run staticcheck
+      run: staticcheck ./...
+
+    - name: Install golint
+      run: go install golang.org/x/lint/golint@latest
+
+    - name: Run golint
+      run: golint ./...
+
+    - name: Run tests
+      run: go test -race -vet=off ./...
+      
+    - name: Create directory
+      run: mkdir -p ./artifact
+      
+    - name: Insert compiled
+      run: echo ./server > ./artifact/server
+
+    - uses: actions/upload-artifact@v3
       with:
-        go-version: ${{ matrix.go-version }}
-    - uses: actions/checkout@v3
-    - run: go build ./...
-  upload:
-    name: Compiled
-    needs: build
-    runs-on: [ubuntu-latest, macos-latest]
-    steps:
-      - name: Download result for build
-        uses: actions/download-artifact@v3
-        with:
-          name: server
-      - name: Print
-        shell: bash
-        run: |
-          value=`cat ./server`
-          echo The result is $value
+        name: server
+        path: ./artifact/server
