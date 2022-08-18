@@ -1,22 +1,23 @@
-name: Audit
+name: Go
 
-on:
-  push:
-    branches: [golang]
-  pull_request:
-    branches: [main]
-
+on: [push, pull_request]
 jobs:
-
-  audit:
-    runs-on: [ubuntu-latest, windows-latest]
+  test:
+    strategy:
+      matrix:
+        go-version: [1.19.x]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Set up Go
-      uses: actions/setup-go@v2
+    - uses: actions/cache@v3
       with:
-        go-version: 1.19.x
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-go-
+    - uses: actions/setup-go@v3
+      with:
+        go-version: ${{ matrix.go-version }}
+    - uses: actions/checkout@v3
 
     - name: Verify dependencies
       run: go mod verify
