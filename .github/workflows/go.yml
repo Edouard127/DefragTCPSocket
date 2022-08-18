@@ -96,8 +96,11 @@ jobs:
       - name: Install godegraph
         run: go install github.com/kisielk/godepgraph
 
+      - name: Update apt-get
+        run: sudo apt-get update
+
       - name: Install dot
-        run: apt install graphviz
+        run: sudo apt-get install graphviz
 
       - name: Generate graph
         run: godepgraph kamigen/socket | dot -Tpng -o godepgraph.png
