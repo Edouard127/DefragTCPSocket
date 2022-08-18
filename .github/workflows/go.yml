@@ -2,7 +2,7 @@ name: Audit
 
 on:
   push:
-    branches: [main]
+    branches: [golang]
   pull_request:
     branches: [main]
 
