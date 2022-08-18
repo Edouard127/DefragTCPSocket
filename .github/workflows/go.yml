@@ -25,7 +25,10 @@ jobs:
       run: go mod verify
 
     - name: Create build directory
-      run: mkdir build
+      run: mkdir $BUILD_DIR
+
+    - name: LS
+      run: ls .
 
     - name: Build
       run: go build -o ./$BUILD_DIR/${{ runner.os }}-server .
