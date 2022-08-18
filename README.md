@@ -93,10 +93,7 @@ Each packet sent must match the hardcoded protocol, a documentation will soon be
 
 ```
 [Packet]
-[Number of arguments]
-[Offsets] Example: Offsets of 5, 8 // Not in use yet but required
-[Length] Length of the packet // Not in use yet but required
-[Data...] The number of arguments must match the number of arguments
+[Data...] The number of arguments
 ```
 
 
@@ -109,9 +106,6 @@ Using the client.js
 ```bash
 node client.js
 [Packet] 5
-[N Args] 2
-[Offset] x
-[Length] x
 [Data...] The arguments are strings splited into array of bytes
 ```
 
