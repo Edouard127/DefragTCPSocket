@@ -2,11 +2,11 @@ name: Go
 
 on: [push, pull_request]
 jobs:
-  Build:
+  Linux:
     strategy:
       matrix:
         go-version: [1.19.x]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/cache@v3
@@ -25,14 +25,8 @@ jobs:
     - name: Create build directory
       run: mkdir build
 
-    - name: LS
-      run: ls .
-
     - name: Build
       run: go build -o ./build/${{ runner.os }}-server .
-
-    - name: LS
-      run: ls ./build/
 
     - name: Run go vet
       run: go vet .
@@ -45,3 +39,40 @@ jobs:
       with:
         name: Releases
         path: ./build/${{ runner.os }}-server
+  Windows:
+    strategy:
+      matrix:
+        go-version: [ 1.19.x ]
+        os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+      - uses: actions/checkout@v3
+
+      - name: Verify dependencies
+        run: go mod verify
+
+      - name: Create build directory
+        run: mkdir build
+
+      - name: Build
+        run: go build -o ./build/${{ runner.os }}-server.exe .
+
+      - name: Run go vet
+        run: go vet .
+
+      - name: Run tests
+        run: go test -race -vet=off ./...
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Releases
+          path: ./build/${{ runner.os }}-server.exe
