@@ -48,7 +48,8 @@ jobs:
     - name: Insert compiled
       run: echo ./server > ./artifact/server
 
-    - uses: actions/upload-artifact@v3
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v3
       with:
         name: server
         path: ./artifact/server
