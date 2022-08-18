@@ -33,6 +33,9 @@ jobs:
       
     - name: Create directory
       run: mkdir -p ./artifact
+
+    - name: List directory
+      run: ls .
       
     - name: Insert compiled
       run: cat ./server > ./artifact/server
