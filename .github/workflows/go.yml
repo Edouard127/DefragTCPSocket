@@ -2,7 +2,7 @@ name: Go
 
 on: [push, pull_request]
 jobs:
-  test:
+  build:
     strategy:
       matrix:
         go-version: [1.19.x]
@@ -18,4 +18,18 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
     - uses: actions/checkout@v3
-    - run: go test ./...
+    - run: go build ./...
+  upload:
+    name: Compiled
+    needs: build
+    runs-on: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Download result for build
+        uses: actions/download-artifact@v3
+        with:
+          name: server
+      - name: Print
+        shell: bash
+        run: |
+          value=`cat ./server`
+          echo The result is $value
