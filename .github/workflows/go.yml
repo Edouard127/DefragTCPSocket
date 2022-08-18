@@ -23,10 +23,10 @@ jobs:
       run: go mod verify
 
     - name: Build
-      run: go build -v ./...
+      run: go build .
 
     - name: Run go vet
-      run: go vet ./...
+      run: go vet .
 
     - name: Run tests
       run: go test -race -vet=off ./...
@@ -35,7 +35,7 @@ jobs:
       run: mkdir -p ./artifact
       
     - name: Insert compiled
-      run: cat ./../server > ./artifact/server
+      run: cat ./server > ./artifact/server
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v3
