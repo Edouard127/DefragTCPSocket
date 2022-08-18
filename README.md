@@ -17,7 +17,7 @@ go build
 
 ## Features
 
-- WIP Multi-worker support
+- Multi-worker support
 - WIP Get screenshot from the workers
 - Login & Logout from servers
 - Password secured connections
