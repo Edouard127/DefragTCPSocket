@@ -19,7 +19,7 @@ go build
 
 - WIP Multi-worker support
 - WIP Get screenshot from the workers
-- WIP Login & Logout from servers
+- Login & Logout from servers
 - Password secured connections
 - Baritone & Lambda commands
 - Send messages to servers
