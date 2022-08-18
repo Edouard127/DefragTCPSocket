@@ -105,11 +105,8 @@ jobs:
       - name: Generate graph
         run: godepgraph kamigen/socket | dot -Tpng -o godepgraph.png
 
-      - name: Create README.md
-        run: echo "![godepgraph](./godepgraph.png)" > README.md
-
-      - name: Upload a Build Artifact
+      - name: Upload graph
         uses: actions/upload-artifact@v3
         with:
-          name: README.md
-          path: ./README.md
+          name: godepgraph.png
+          path: ./godepgraph.png
