@@ -7,23 +7,23 @@ import (
 // BroadcastWorkers Broadcast message to all workers
 func BroadcastWorkers(message []byte) {
 	clients := structs.Clients
-	for client := range clients {
-		_, err := clients[client].Conn.Write(message)
+	for _, c := range clients {
+		_, err := c.Conn.Write(message)
 		if err != nil {
 			return
 		}
-		clients[client].Conn.Write([]byte{'\n'})
+		c.Conn.Write([]byte{'\n'})
 	}
 }
 
 // BroadcastListeners Broadcast message to all listeners
 func BroadcastListeners(message []byte) {
-	listeners := structs.Listeners
-	for client := range listeners {
-		_, err := listeners[client].Conn.Write(message)
+	listeners := &structs.Listeners
+	for _, c := range *listeners {
+		_, err := c.Conn.Write(message)
 		if err != nil {
 			return
 		}
-		listeners[client].Conn.Write([]byte{'\n'})
+		c.Conn.Write([]byte{'\n'})
 	}
 }

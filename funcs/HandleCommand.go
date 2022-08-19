@@ -57,7 +57,7 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 			case 0x0D:
 				{
 					// Register the listener
-					listeners := structs.Listeners
+					listeners := &structs.Listeners
 					// Get random bytes for the listener id.
 					id := utils.GetRandomBytes(16)
 
@@ -65,7 +65,7 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 
 					listener := structs.Listener{Hash: id, Conn: con}
 
-					listeners = append(listeners, &listener)
+					*listeners = append(*listeners, &listener)
 				}
 			case 0x05:
 				{
@@ -74,8 +74,8 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 					name := strings.TrimSpace(string(args[0]))
 					password := strings.TrimSpace(string(args[1]))
 					client := structs.Client{Name: name, Conn: con, Password: password}
-					clients := structs.Clients
-					clients = append(clients, &client)
+					clients := &structs.Clients
+					*clients = append(*clients, &client)
 					fmt.Println(client)
 					_, err := con.Write(message)
 					if err != nil {
@@ -92,6 +92,7 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 			switch cCom.Byte {
 			case 0x07:
 				{
+					fmt.Println("Broadcasting to all listeners")
 					// Broadcast the message to all listeners.
 					utils.BroadcastListeners(message)
 
@@ -109,6 +110,15 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 		{
 			// Game side
 			switch cCom.Byte {
+			case 0x07:
+				fmt.Println(string(args[0]), string(args[1]))
+				fmt.Println(&structs.Clients)
+				c := *utils.GetClient(string(args[0]))
+				_, e := c.Conn.Write(message)
+				if e != nil {
+					fmt.Println(e)
+				}
+				c.Conn.Write([]byte{'\n'})
 			case 0x09:
 				// Send chat message
 				c := utils.GetClient(string(args[0]))
