@@ -6,7 +6,7 @@ import (
 
 // BroadcastWorkers Broadcast message to all workers
 func BroadcastWorkers(message []byte) {
-	clients := *structs.Clients
+	clients := structs.Clients
 	for client := range clients {
 		_, err := clients[client].Conn.Write(message)
 		if err != nil {
@@ -18,7 +18,7 @@ func BroadcastWorkers(message []byte) {
 
 // BroadcastListeners Broadcast message to all listeners
 func BroadcastListeners(message []byte) {
-	listeners := *structs.Listeners
+	listeners := structs.Listeners
 	for client := range listeners {
 		_, err := listeners[client].Conn.Write(message)
 		if err != nil {

@@ -1,3 +1,3 @@
 package structs
 
-var Clients *[]*Client
+var Clients []*Client

@@ -1,3 +1,3 @@
 package structs
 
-var Listeners *[]*Listener
+var Listeners []*Listener

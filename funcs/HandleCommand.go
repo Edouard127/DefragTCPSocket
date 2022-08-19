@@ -57,7 +57,7 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 			case 0x0D:
 				{
 					// Register the listener
-					listeners := *structs.Listeners
+					listeners := structs.Listeners
 					// Get random bytes for the listener id.
 					id := utils.GetRandomBytes(16)
 
@@ -74,7 +74,7 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 					name := strings.TrimSpace(string(args[0]))
 					password := strings.TrimSpace(string(args[1]))
 					client := structs.Client{Name: name, Conn: con, Password: password}
-					clients := *structs.Clients
+					clients := structs.Clients
 					clients = append(clients, &client)
 					fmt.Println(client)
 					_, err := con.Write(message)
