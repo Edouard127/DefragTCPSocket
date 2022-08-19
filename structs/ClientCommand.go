@@ -3,6 +3,8 @@ package structs
 type ClientCommand struct {
 	// The byte of the command.
 	Byte byte
+	// The flags of the command.
+	Flag byte
 	// The arguments of the command.
 	Args [][]byte
 }

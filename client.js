@@ -5,7 +5,7 @@ const client = net.createConnection({
     port: 1984
 }, () => {
     console.log("connected to server")
-    //client.write(Buffer.from("5 70 1 1 Kamigen password"))
+    client.write(Buffer.from("13 0"))
     process.stdin.pipe(client)
     client.on("data", (data) => {
         console.log(data.toString())

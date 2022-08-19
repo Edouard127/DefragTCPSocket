@@ -37,67 +37,106 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 	// Store the request data in a splited array.
 	request := strings.Fields(string(cmd))
 	// Store the arguments of the request
-	args := utils.GetArgs(request[1:])
+	args := utils.GetArgs(request[2:])
 	// TODO: Get more arguments from the request.
-	intV, err := strconv.Atoi(request[0])
+	packetByte, _ := strconv.Atoi(request[0])
+	packetFlag, _ := strconv.Atoi(request[1])
 	// Store the command in a ClientCommands struct.
-	cCom := structs.ClientCommand{Byte: byte(intV), Args: args}
+	cCom := structs.ClientCommand{Byte: byte(packetByte), Flag: byte(packetFlag), Args: args}
 	for _, v := range args {
 		fmt.Println(string(v))
 	}
-	fmt.Println(intV, byte(intV), err)
 	fmt.Println(cCom.GetPacketName(), cCom)
 	message := utils.ByteArraysExtract(utils.GetArgs(request))
 
-	switch cCom.Byte {
-	case 0x05:
-		// Register the client
-		// Remove whitespaces from the name.
-		name := strings.TrimSpace(string(args[0]))
-		password := strings.TrimSpace(string(args[1]))
-		client := structs.Client{Name: name, Conn: con, Password: password}
-		structs.Clients = append(structs.Clients, &client)
-		fmt.Println(client)
-		_, err := con.Write(message)
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
-		con.Write([]byte{'\n'})
-		break
-	case 0x07:
-		// Broadcast the message to all listeners.
-		c := utils.GetClient(string(args[0]))
-		_, e := c.Conn.Write(message)
-		if e != nil {
-			fmt.Println(e)
-		}
-		c.Conn.Write([]byte{'\n'})
-	case 0x09:
-		// Send chat message
-		// Get the message from the arguments and add them to a byte array with a space between them.
-		fmt.Println("Broadcasting:", string(message))
-		c := utils.GetClient(string(args[0]))
-		i, e := c.Conn.Write(message)
-		if e != nil {
-			fmt.Println(e)
-		}
-		c.Conn.Write([]byte{'\n'})
+	switch cCom.Flag {
+	case 0x00:
+		{
+			// Server side
+			switch cCom.Byte {
+			case 0x0D:
+				{
+					// Register the listener
+					listeners := *structs.Listeners
+					// Get random bytes for the listener id.
+					id := utils.GetRandomBytes(16)
 
-		fmt.Println("Bytes sent:", i)
-		break
-	case 0x0A:
-		// Send chat message
-		// Get the message from the arguments and add them to a byte array with a space between them.
-		fmt.Println("Broadcasting:", string(message))
-		c := utils.GetClient(string(args[0]))
-		i, e := c.Conn.Write(message)
-		if e != nil {
-			fmt.Println(e)
-		}
-		c.Conn.Write([]byte{'\n'})
+					fmt.Println("Registering listener with id:", id, "(", string(id), ")")
 
-		fmt.Println("Bytes sent:", i)
-		break
+					listener := structs.Listener{Hash: id, Conn: con}
+
+					listeners = append(listeners, &listener)
+				}
+			case 0x05:
+				{
+					// Register the client
+					// Remove whitespaces from the name.
+					name := strings.TrimSpace(string(args[0]))
+					password := strings.TrimSpace(string(args[1]))
+					client := structs.Client{Name: name, Conn: con, Password: password}
+					clients := *structs.Clients
+					clients = append(clients, &client)
+					fmt.Println(client)
+					_, err := con.Write(message)
+					if err != nil {
+						log.Fatal(err)
+						return
+					}
+					con.Write([]byte{'\n'})
+				}
+			}
+		}
+	case 0x01:
+		{
+			// Client side
+			switch cCom.Byte {
+			case 0x07:
+				{
+					// Broadcast the message to all listeners.
+					utils.BroadcastListeners(message)
+
+					/* if l != nil {
+						for _, v := range l {
+							v.Write(message)
+						}
+					}
+					*/
+
+				}
+			}
+		}
+	case 0x02:
+		{
+			// Game side
+			switch cCom.Byte {
+			case 0x09:
+				// Send chat message
+				c := utils.GetClient(string(args[0]))
+				i, e := c.Conn.Write(message)
+				if e != nil {
+					fmt.Println(e)
+				}
+				c.Conn.Write([]byte{'\n'})
+
+				fmt.Println("Bytes sent:", i)
+				break
+			case 0x0A:
+				// Send chat message
+				c := utils.GetClient(string(args[0]))
+				i, e := c.Conn.Write(message)
+				if e != nil {
+					fmt.Println(e)
+				}
+				c.Conn.Write([]byte{'\n'})
+
+				fmt.Println("Bytes sent:", i)
+				break
+			}
+		}
+	case 0x03:
+		{
+			// Client & Game side
+		}
 	}
+
 }

@@ -14,4 +14,6 @@ var Packets = map[string]byte{
 	"BARITONE":          0x0A, // user->server<->client Notifies the server that the user wants to send a baritone command.
 	"LAMBDA":            0x0B, // user->server<->client Notifies the server that the user wants to send a lambda command.
 	"ERROR":             0x0C, // client<->server<->user Notifies the user that the server or the client has encountered an error.
+	"LISTENER_ADD":      0x0D, // user<->server Notifies the server that a listener has been added.
+	"LISTENER_REMOVE":   0x0E, // user<->server Notifies the server that a listener has been removed.
 }

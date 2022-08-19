@@ -33,7 +33,7 @@ func main() {
 		}
 
 		// Execute the keepAlive function in a new goroutine
-		go funcs.KeepAlive()
+		// go funcs.KeepAlive()
 		// Execute the handleRequest function in a new goroutine
 		go funcs.HandleRequest(conn)
 	}
