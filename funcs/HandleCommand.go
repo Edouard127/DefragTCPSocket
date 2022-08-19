@@ -43,9 +43,6 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 	packetFlag, _ := strconv.Atoi(request[1])
 	// Store the command in a ClientCommands struct.
 	cCom := structs.ClientCommand{Byte: byte(packetByte), Flag: byte(packetFlag), Args: args}
-	for _, v := range args {
-		fmt.Println(string(v))
-	}
 	fmt.Println(cCom.GetPacketName(), cCom)
 	message := utils.ByteArraysExtract(utils.GetArgs(request))
 
@@ -76,7 +73,6 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 					client := structs.Client{Name: name, Conn: con, Password: password}
 					clients := &structs.Clients
 					*clients = append(*clients, &client)
-					fmt.Println(client)
 					_, err := con.Write(message)
 					if err != nil {
 						log.Fatal(err)
@@ -92,7 +88,6 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 			switch cCom.Byte {
 			case 0x07:
 				{
-					fmt.Println("Broadcasting to all listeners")
 					// Broadcast the message to all listeners.
 					utils.BroadcastListeners(message)
 
@@ -111,8 +106,6 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 			// Game side
 			switch cCom.Byte {
 			case 0x07:
-				fmt.Println(string(args[0]), string(args[1]))
-				fmt.Println(&structs.Clients)
 				c := *utils.GetClient(string(args[0]))
 				_, e := c.Conn.Write(message)
 				if e != nil {
