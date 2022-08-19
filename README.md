@@ -54,6 +54,16 @@ type ClientCommand struct {
 }
 ```
 
+Since the server do not know where the data should be delivered, you need to provide a flag which tells the server where the data should be sent.
+```go
+var Flags = map[string]byte{
+	"SERVER": 0x00, // Server
+	"CLIENT": 0x01, // Listeners
+	"GAME":   0x02, // Workers
+	"BOTH":   0x03, // CLIENT & GAME
+}
+```
+
 
 #### Register a new worker
 
@@ -85,6 +95,8 @@ Packets:
 - 0x0A Send a baritone command
 - 0x0B Send a lambda command
 - 0x0C Error packet
+- 0x0D Register a new listener
+- 0x0E Remove a listener
 
 
 #### Protocol
@@ -93,6 +105,7 @@ Each packet sent must match the hardcoded protocol, a documentation will soon be
 
 ```
 [Packet]
+[Flag]
 [Data...] The number of arguments
 ```
 
@@ -106,6 +119,7 @@ Using the client.js
 ```bash
 node client.js
 [Packet] 5
+[Flag] 2
 [Data...] The arguments are strings splited into array of bytes
 ```
 
