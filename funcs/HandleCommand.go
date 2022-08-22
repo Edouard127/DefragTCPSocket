@@ -84,22 +84,7 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 		}
 	case 0x01:
 		{
-			// Client side
-			switch cCom.Byte {
-			case 0x07:
-				{
-					// Broadcast the message to all listeners.
-					utils.BroadcastListeners(message)
-
-					/* if l != nil {
-						for _, v := range l {
-							v.Write(message)
-						}
-					}
-					*/
-
-				}
-			}
+			utils.BroadcastListeners(message)
 		}
 	case 0x02:
 		{
