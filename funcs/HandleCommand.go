@@ -14,8 +14,14 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 	con := *connection
 	cmd := *command
 	if len(cmd) == 0 {
-		con.Write([]byte{structs.Packets["ERROR"]})
-		con.Close()
+		_, write := con.Write([]byte{structs.Packets["ERROR"]})
+		if write != nil {
+			return
+		}
+		err := con.Close()
+		if err != nil {
+			return
+		}
 	}
 
 	/*
@@ -78,7 +84,10 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 						log.Fatal(err)
 						return
 					}
-					con.Write([]byte{'\n'})
+					_, err = con.Write([]byte{'\n'})
+					if err != nil {
+						return
+					}
 				}
 			}
 		}
@@ -94,7 +103,10 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 			if e != nil {
 				fmt.Println(e)
 			}
-			c.Conn.Write([]byte{'\n'})
+			_, err := c.Conn.Write([]byte{'\n'})
+			if err != nil {
+				return
+			}
 
 			fmt.Println("Bytes sent:", i)
 		}
