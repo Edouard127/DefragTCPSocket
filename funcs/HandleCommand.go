@@ -89,37 +89,14 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 	case 0x02:
 		{
 			// Game side
-			switch cCom.Byte {
-			case 0x07:
-				c := *utils.GetClient(string(args[0]))
-				_, e := c.Conn.Write(message)
-				if e != nil {
-					fmt.Println(e)
-				}
-				c.Conn.Write([]byte{'\n'})
-			case 0x09:
-				// Send chat message
-				c := utils.GetClient(string(args[0]))
-				i, e := c.Conn.Write(message)
-				if e != nil {
-					fmt.Println(e)
-				}
-				c.Conn.Write([]byte{'\n'})
-
-				fmt.Println("Bytes sent:", i)
-				break
-			case 0x0A:
-				// Send chat message
-				c := utils.GetClient(string(args[0]))
-				i, e := c.Conn.Write(message)
-				if e != nil {
-					fmt.Println(e)
-				}
-				c.Conn.Write([]byte{'\n'})
-
-				fmt.Println("Bytes sent:", i)
-				break
+			c := utils.GetClient(string(args[0]))
+			i, e := c.Conn.Write(message)
+			if e != nil {
+				fmt.Println(e)
 			}
+			c.Conn.Write([]byte{'\n'})
+
+			fmt.Println("Bytes sent:", i)
 		}
 	case 0x03:
 		{
