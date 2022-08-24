@@ -11,7 +11,7 @@ Add go to PATH : https://golang.org/doc/install/source#environment
 ```bash
 git clone https://github.com/Edouard127/DefragTCPSocket.git
 cd DefragTCPSocket
-go build
+go build .
 ```
 
 
