@@ -9,7 +9,13 @@ const client = net.createConnection({
     client.write(Buffer.from("13 0"))
     process.stdin.pipe(client)
     client.on("data", (data) => {
-        console.log(data.toString())
+        const args = data.toString().split(" ")
+        const command = args.shift()
+        switch (command) {
+            case "16": {
+                console.log(data.toString())
+            }
+        }
     })
 })
 
