@@ -2,8 +2,9 @@ package funcs
 
 import (
 	"github.com/fatih/color"
-	"log"
 	"net"
+	"strconv"
+	"strings"
 )
 
 func HandleRequest(conn net.Conn) {
@@ -11,11 +12,17 @@ func HandleRequest(conn net.Conn) {
 	for {
 		buffer := make([]byte, 1024)
 
-		i, err := conn.Read(buffer)
+		i, _ := conn.Read(buffer)
+
 		buffer = buffer[:i]
-		if err != nil {
-			log.Fatal(err)
-		}
-		go HandleCommand(&conn, &buffer)
+
+		println("Buffer size:", i)
+
+		c := strings.Fields(string(buffer))
+
+		//length, _ := strconv.Atoi(c[0])
+		fragmented, _ := strconv.Atoi(c[1])
+
+		go HandleCommand(&conn, &buffer, fragmented == 1)
 	}
 }

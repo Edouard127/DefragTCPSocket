@@ -10,9 +10,10 @@ import (
 	"strings"
 )
 
-func HandleCommand(connection *net.Conn, command *[]byte) {
+func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool) {
 	con := *connection
 	cmd := *command
+
 	if len(cmd) == 0 {
 		_, write := con.Write([]byte{structs.Packets["ERROR"]})
 		if write != nil {
@@ -43,10 +44,22 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 	// Store the request data in a splited array.
 	request := strings.Fields(string(cmd))
 	// Store the arguments of the request
-	args := utils.GetArgs(request[2:])
+	args := utils.GetArgs(request[4:])
 	// TODO: Get more arguments from the request.
-	packetByte, _ := strconv.Atoi(request[0])
-	packetFlag, _ := strconv.Atoi(request[1])
+	//fragmentationByte, _ := strconv.Atoi(request[1])
+	packetByte, _ := strconv.Atoi(request[2])
+	packetFlag, _ := strconv.Atoi(request[3])
+
+	/*var unfragmentedData [][]byte
+
+	if needFragmentation {
+		for {
+			if fragmentationByte == 0 {
+				break
+			}
+			unfragmentedData = append(unfragmentedData, args...)
+		}
+	}*/
 	// Store the command in a ClientCommands struct.
 	cCom := structs.ClientCommand{Byte: byte(packetByte), Flag: byte(packetFlag), Args: args}
 	fmt.Println(cCom.GetPacketName(), cCom)
@@ -99,6 +112,7 @@ func HandleCommand(connection *net.Conn, command *[]byte) {
 		{
 			// Game side
 			c := utils.GetClient(string(args[0]))
+			println(c.Name)
 			i, e := c.Conn.Write(message)
 			if e != nil {
 				fmt.Println(e)
