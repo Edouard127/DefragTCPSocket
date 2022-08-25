@@ -10,8 +10,12 @@ func KeepAlive() {
 	for {
 		clients := &structs.Clients
 		for client := range *clients {
-			(*clients)[client].Conn.SetDeadline(time.Now().Add(time.Second * 5))
-			_, err := (*clients)[client].Conn.Write([]byte{'\n'})
+			err := (*clients)[client].Conn.SetDeadline(time.Now().Add(time.Second * 5))
+			if err != nil {
+				*clients = append((*clients)[:client], (*clients)[client+1:]...)
+				return
+			}
+			_, err = (*clients)[client].Conn.Write([]byte{'\n'})
 			if err != nil {
 				*clients = append((*clients)[:client], (*clients)[client+1:]...)
 				return
