@@ -6,16 +6,17 @@ const client = net.createConnection({
     port: 1984
 }, () => {
     console.log("Connected to server".green)
-    client.write(Buffer.from("13 0"))
+    client.write(Buffer.from("10 0 13 0"))
     process.stdin.pipe(client)
     client.on("data", (data) => {
-        const args = data.toString().split(" ")
-        const command = args.shift()
-        switch (command) {
+        console.log(data.toString()+"\n\n")
+        //const args = data.toString().split(" ")
+        //const command = args.shift()
+        /*switch (command) {
             case "16": {
-                console.log(data.toString())
+
             }
-        }
+        }*/
     })
 })
 
