@@ -102,6 +102,7 @@ var Packets = map[string]byte{
 "LISTENER_REMOVE": 0x0E, // user<->server Notifies the server that a listener has been removed.
 "HIGHWAY_TOOLS":   0x0F, // user<->server<->client Notifies the server that the user wants to send a highwaytools command.
 "SCREENSHOT":      0x10, // user<->server<->client Notifies the server that the user wants to get a screenshot.
+"GET_JOBS":        0x11, // user<->server<->client Notifies the server that the user wants to get the list of jobs.
 }
 ```
 
@@ -111,9 +112,7 @@ var Packets = map[string]byte{
 Each packet sent must match the hardcoded protocol, a documentation will soon be available
 
 ```
-[Packet]
-[Flag]
-[Data...]
+[Length] [Fragmented] [Packet] [Flag] [Worker] [Password] [Data]
 ```
 
 
@@ -125,10 +124,11 @@ Using the client.js
 
 ```bash
 node client.js
-[Packet] 5
-[Flag] 2
-[Data...] The arguments are strings splited into array of bytes
+
+10 0 9 2 Kamigen password Hello Chat
 ```
+
+Dev Video: https://youtu.be/j80Uqv2IxQI
 
 Video: SOON
 
