@@ -19,4 +19,5 @@ var Packets = map[string]byte{
 	"HIGHWAY_TOOLS":   0x0F, // user<->server<->client Notifies the server that the user wants to send a highwaytools command.
 	"SCREENSHOT":      0x10, // user<->server<->client Notifies the server that the user wants to get a screenshot.
 	"GET_JOBS":        0x11, // user<->server<->client Notifies the server that the user wants to get the list of jobs.
+	"ROTATE":          0x12, // user<->server<->client Rotates the worker head position.
 }

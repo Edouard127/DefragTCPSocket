@@ -13,6 +13,9 @@ func HandleRequest(conn net.Conn) {
 		buffer := make([]byte, 1024)
 
 		i, _ := conn.Read(buffer)
+		if i == 0 {
+			continue
+		}
 
 		buffer = buffer[:i]
 
@@ -21,7 +24,11 @@ func HandleRequest(conn net.Conn) {
 		c := strings.Fields(string(buffer))
 
 		//length, _ := strconv.Atoi(c[0])
-		fragmented, _ := strconv.Atoi(c[1])
+		fragmented, err := strconv.Atoi(c[1])
+		if err != nil {
+			color.New(color.FgRed, color.Bold).Println("Error:", err)
+			return
+		}
 
 		go HandleCommand(&conn, &buffer, fragmented == 1)
 	}

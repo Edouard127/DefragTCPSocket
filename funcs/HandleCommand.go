@@ -111,13 +111,17 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 	case 0x02:
 		{
 			// Game side
-			c := utils.GetClient(string(args[0]))
-			println(c.Name)
+			c, err := utils.GetClient(string(args[0]))
+			if err != nil {
+				con.Write([]byte{structs.Packets["ERROR"]})
+				fmt.Println(err)
+				return
+			}
 			i, e := c.Conn.Write(message)
 			if e != nil {
 				fmt.Println(e)
 			}
-			_, err := c.Conn.Write([]byte{'\n'})
+			_, err = c.Conn.Write([]byte{'\n'})
 			if err != nil {
 				return
 			}
