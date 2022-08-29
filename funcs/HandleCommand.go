@@ -133,5 +133,4 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 			// Client & Game side
 		}
 	}
-
 }
