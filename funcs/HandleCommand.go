@@ -45,31 +45,32 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 	request := strings.Fields(string(cmd))
 	// Store the arguments of the request
 	args := utils.GetArgs(request[4:])
-	// TODO: Get more arguments from the request.
-	//fragmentationByte, _ := strconv.Atoi(request[1])
+
+	length, _ := strconv.Atoi(request[0])
+	fragmentationByte, _ := strconv.Atoi(request[1])
 	packetByte, _ := strconv.Atoi(request[2])
 	packetFlag, _ := strconv.Atoi(request[3])
 
-	/*var unfragmentedData [][]byte
-
-	if needFragmentation {
-		for {
-			if fragmentationByte == 0 {
-				break
-			}
-			unfragmentedData = append(unfragmentedData, args...)
-		}
-	}*/
 	// Store the command in a ClientCommands struct.
-	cCom := structs.ClientCommand{Byte: byte(packetByte), Flag: byte(packetFlag), Args: args}
-	fmt.Println(cCom.GetPacketName(), cCom)
+	c := structs.ClientCommand{Length: byte(length), Fragmented: byte(fragmentationByte), Byte: byte(packetByte), Flag: byte(packetFlag), Args: args}
 	message := utils.ByteArraysExtract(utils.GetArgs(request))
 
-	switch cCom.Flag {
+	// If it needs fragmentation, loop and add the data to the buffer
+	if needFragmentation {
+		buffer := make([]byte, c.Length)
+		for {
+			if c.Byte == 0 {
+				break
+			}
+			buffer = append(buffer, cmd...)
+		}
+	}
+
+	switch c.Flag {
 	case 0x00:
 		{
 			// Server side
-			switch cCom.Byte {
+			switch c.Byte {
 			case 0x0D:
 				{
 					// Register the listener
@@ -106,6 +107,8 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 		}
 	case 0x01:
 		{
+			utils.LogFile(false, "[INFO]", "Received command:", c.GetPacketName())
+			fmt.Println("Client side")
 			utils.BroadcastListeners(message)
 		}
 	case 0x02:
