@@ -2,6 +2,7 @@ package funcs
 
 import (
 	"fmt"
+	"kamigen/socket/enums"
 	"kamigen/socket/structs"
 	"kamigen/socket/utils"
 	"log"
@@ -54,8 +55,9 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 	// Store the command in a ClientCommands struct.
 	c := structs.ClientCommand{Length: byte(length), Fragmented: byte(fragmentationByte), Byte: byte(packetByte), Flag: byte(packetFlag), Args: args}
 	message := utils.ByteArraysExtract(utils.GetArgs(request))
+	fmt.Println(c.GetPacketName(), c)
 
-	// If it needs fragmentation, loop and add the data to the buffer
+	// TODO
 	if needFragmentation {
 		buffer := make([]byte, c.Length)
 		for {
@@ -103,6 +105,18 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 						return
 					}
 				}
+			case 0x06:
+				{
+					// Remove the client from the clients array.
+					name := strings.TrimSpace(string(args[0]))
+					clients := &structs.Clients
+					if i, _, err := structs.GetClient(name); err == nil {
+						*clients = append((*clients)[:i], (*clients)[i+1:]...)
+					} else {
+						utils.LogFile(false, enums.ERROR, "Client not found")
+						con.Write([]byte{structs.Packets["ERROR"]})
+					}
+				}
 			}
 		}
 	case 0x01:
@@ -114,22 +128,13 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 	case 0x02:
 		{
 			// Game side
-			c, err := structs.GetClient(string(args[0]))
-			if err != nil {
+			if _, c, err := structs.GetClient(string(args[0])); err == nil {
+				c.Conn.Write(message)
+				c.Conn.Write([]byte{'\n'})
+			} else {
+				utils.LogFile(false, enums.ERROR, "Client not found")
 				con.Write([]byte{structs.Packets["ERROR"]})
-				fmt.Println(err)
-				return
 			}
-			i, e := c.Conn.Write(message)
-			if e != nil {
-				fmt.Println(e)
-			}
-			_, err = c.Conn.Write([]byte{'\n'})
-			if err != nil {
-				return
-			}
-
-			fmt.Println("Bytes sent:", i)
 		}
 	case 0x03:
 		{

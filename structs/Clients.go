@@ -5,14 +5,14 @@ import "errors"
 var Clients []*Client
 
 // GetClient Get pointer of struct by name
-func GetClient(name string) (*Client, error) {
+func GetClient(name string) (int, *Client, error) {
 	clients := &Clients
-	for _, v := range *clients {
+	for i, v := range *clients {
 		if v.Name == name {
-			return v, nil
+			return i, v, nil
 		}
 	}
-	return &Client{}, errors.New("client not found")
+	return -1, &Client{}, errors.New("client not found")
 }
 
 // BroadcastWorkers Broadcast message to all workers
