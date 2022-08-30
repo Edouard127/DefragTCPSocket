@@ -1,6 +1,8 @@
 package structs
 
-import "net"
+import (
+	"net"
+)
 
 type Client struct {
 	// The name of the client.

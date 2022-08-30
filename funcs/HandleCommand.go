@@ -109,12 +109,12 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 		{
 			utils.LogFile(false, "[INFO]", "Received command:", c.GetPacketName())
 			fmt.Println("Client side")
-			utils.BroadcastListeners(message)
+			structs.BroadcastListeners(message)
 		}
 	case 0x02:
 		{
 			// Game side
-			c, err := utils.GetClient(string(args[0]))
+			c, err := structs.GetClient(string(args[0]))
 			if err != nil {
 				con.Write([]byte{structs.Packets["ERROR"]})
 				fmt.Println(err)

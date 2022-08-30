@@ -36,9 +36,6 @@ func LogFile(con bool, message ...string) error {
 				fmt.Println(s)
 			}
 		}
-		if _, err := f.WriteString("\n"); err != nil {
-			return err
-		}
 		return nil
 	}
 }
