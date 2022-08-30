@@ -1,7 +1,7 @@
 package funcs
 
 import (
-	"github.com/fatih/color"
+	"kamigen/socket/enums"
 	"kamigen/socket/utils"
 	"net"
 	"strconv"
@@ -9,8 +9,7 @@ import (
 )
 
 func HandleRequest(conn net.Conn, bSize int) {
-	color.New(color.FgGreen, color.Bold).Println("New connection from:", conn.RemoteAddr().String())
-	utils.LogFile(false, "New connection from:", conn.RemoteAddr().String())
+	utils.LogFile(false, enums.INFO, "New connection from:", conn.RemoteAddr().String())
 
 	for {
 		i, buffer, err := ReadAll(conn, bSize)
@@ -18,9 +17,8 @@ func HandleRequest(conn net.Conn, bSize int) {
 			continue
 		}
 		if err != nil {
-			utils.LogFile(false, "Connection from:", conn.RemoteAddr().String(), "closed")
-			utils.LogFile(true, "Error: ", err.Error())
-			color.New(color.FgRed, color.Bold).Println("Connection from:", conn.RemoteAddr().String(), "closed")
+			utils.LogFile(false, enums.INFO, "Connection from:", conn.RemoteAddr().String(), "closed")
+			utils.LogFile(true, enums.ERROR, "Error: ", err.Error())
 			conn.Close()
 			return
 		}
@@ -28,7 +26,7 @@ func HandleRequest(conn net.Conn, bSize int) {
 
 		//length, _ := strconv.Atoi(c[0])
 		if fragmented, err := strconv.Atoi(c[1]); err != nil {
-			utils.LogFile(true, "Error: ", err.Error())
+			utils.LogFile(true, enums.ERROR, "Error: ", err.Error())
 			conn.Close()
 			return
 		} else if fragmented == 1 || fragmented == 0 {
@@ -40,10 +38,10 @@ func HandleRequest(conn net.Conn, bSize int) {
 // ReadAll Read all the data from the connection
 func ReadAll(conn net.Conn, b int) (int, []byte, error) {
 	buffer := make([]byte, b)
-	i, err := conn.Read(buffer)
-	if err != nil {
+	if i, err := conn.Read(buffer); err != nil {
 		return i, buffer, err
+	} else {
+		buffer = buffer[:i]
+		return i, buffer, nil
 	}
-	buffer = buffer[:i]
-	return i, buffer, nil
 }

@@ -2,39 +2,42 @@ package utils
 
 import (
 	"fmt"
+	"kamigen/socket/enums"
 	"os"
+	"strings"
 	"time"
 )
 
-func LogFile(con bool, message ...string) error {
+func LogFile(con bool, logger enums.Level, message ...string) error {
 	if _, err := os.Stat("log.txt"); os.IsNotExist(err) {
 		f, err := os.Create("log.txt")
 		if err != nil {
 			return err
 		}
-		defer func(f *os.File) {
+		defer func(f *os.File) error {
 			err := f.Close()
 			if err != nil {
-
+				return err
 			}
+			return nil
 		}(f)
 	}
 	if f, err := os.OpenFile("log.txt", os.O_APPEND|os.O_WRONLY, 0644); err != nil {
 		return err
 	} else {
-		defer func(f *os.File) {
+		date := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), time.Now().Hour(), time.Now().Minute(), time.Now().Second(), time.Now().Nanosecond(), time.Local)
+		defer func(f *os.File) error {
 			err := f.Close()
 			if err != nil {
-
-			}
-		}(f)
-		for _, v := range message {
-			date := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), time.Now().Hour(), time.Now().Minute(), time.Now().Second(), time.Now().Nanosecond(), time.Local)
-			if s, err := f.WriteString(date.String() + ": " + v + " "); err != nil {
 				return err
-			} else if con {
-				fmt.Println(s)
 			}
+			return nil
+		}(f)
+		if _, err := f.WriteString(fmt.Sprintf("%s: [%s] %s\n", date.String(), logger, strings.Join(message[:], " "))); err != nil {
+			return err
+		}
+		if con {
+			fmt.Println(message)
 		}
 		return nil
 	}
