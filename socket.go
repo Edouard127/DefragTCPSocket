@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	HOST = "localhost"
-	PORT = "1984"
+	HOST        = "localhost"
+	PORT        = "1984"
+	BUFFER_SIZE = 1024
 )
 
 func main() {
@@ -35,6 +36,6 @@ func main() {
 		// Execute the keepAlive function in a new goroutine
 		go funcs.KeepAlive()
 		// Execute the handleRequest function in a new goroutine
-		go funcs.HandleRequest(conn)
+		go funcs.HandleRequest(conn, BUFFER_SIZE)
 	}
 }
