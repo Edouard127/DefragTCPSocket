@@ -128,7 +128,7 @@ enum class EWorkerType(val byte: Int) {
 }
 ```
 Worker status
-```kt
+```kotlin
 enum class EWorkerStatus(val byte: Byte) {
     BUSY(byte = 0x00),
     IDLE(byte = 0x01),
@@ -139,7 +139,7 @@ If the worker is stuck, the game will send emit an event with the `JOB_STUCK` by
 It will also be sent to the socket with the flag `1`
 
 Job events:
-```kt
+```kotlin
 enum class EJobEvents(val byte: Int) {
     JOB_STARTED(byte = 0x00),
     JOB_FINISHED(byte = 0x01),
