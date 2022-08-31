@@ -8,7 +8,7 @@ var Packets = map[string]byte{
 	"LOGOUT":          0x04, // user->server<->client Notifies the server that the client is trying to log out.
 	"ADD_WORKER":      0x05, // user<->server Notifies the server of a new worker.
 	"REMOVE_WORKER":   0x06, // user<->server Notifies the server that a worker has been removed.
-	"INFORMATIONS":    0x07, // user<->server<->client Notifies the server that the user wants to get the information of a worker.
+	"INFORMATION":     0x07, // user<->server<->client Notifies the server that the user wants to get the information of a worker.
 	"JOB":             0x08, // user<->server<->client Notifies the server that the user wants to get the status of a worker.
 	"CHAT":            0x09, // user->server<->client Notifies the server that the user wants to send a chat message.
 	"BARITONE":        0x0A, // user->server<->client Notifies the server that the user wants to send a baritone command.
