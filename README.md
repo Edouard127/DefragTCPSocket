@@ -1,6 +1,39 @@
 
-# Defrag TCP Socket Golang
+# Lambda Remote Control Socket
 
+A few months ago, I needed a simple solution to build highways on anarchy Minecraft servers.
+
+Despite my short research, I didn't find anything, so...
+
+I decided to make something useful for more than one person.
+
+
+## Badges
+[![forthebadge made-with-go](http://ForTheBadge.com/images/badges/made-with-go.svg)](https://go.dev/)\
+[![Discord](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.gg/J23U4YEaAr)
+![Latest version](https://img.shields.io/github/tag/Edouard127/DefragTCPSocket?label=Latest)
+![Downloads](https://img.shields.io/github/downloads/Edouard127/DefragTCPSocket/total)
+![Maintainer](https://img.shields.io/badge/maintainer-Edouard127-blue)
+![Activity](https://img.shields.io/github/commit-activity/w/Edouard127/DefragTCPSocket)
+![Size](https://img.shields.io/github/languages/code-size/Edouard127/DefragTCPSocket)
+![License](https://img.shields.io/github/license/Edouard127/DefragTCPSocket)
+
+## [Plugin repository](https://github.com/Edouard127/LambdaRemoteControl)
+
+## Features
+
+- Multi-worker support
+- WIP Get screenshot from the workers
+- Login & Logout from servers
+- Password secured connections
+- Baritone & Lambda commands
+- HighwayTools support
+
+## FAQ
+
+#### Can my workers be hijacked?
+
+If you use a strong password, or the default randomly generated password, it is very unlikely that your workers will be intercepted by others.
 
 ## Installation
 
@@ -13,49 +46,34 @@ git clone https://github.com/Edouard127/DefragTCPSocket.git
 cd DefragTCPSocket
 go build .
 ```
+## Documentation
 
+#### Requests
 
-## Features
+Any packet sent must have this:
 
-- Multi-worker support
-- Get screenshot from the workers
-- Login & Logout from servers
-- Password secured connections
-- Baritone & Lambda commands
-- HighwayTools support
-- Send messages to servers
-
-
-## FAQ
-
-#### Can my workers be hijacked?
-
-If you use a strong password, or the default randomly generated password, it is very unlikely that your workers will be intercepted by others.
-
-#### Why my game is crashing ?
-
-Probably because kotlin & java are not my preferred language & not the one I know the most
-
-#### Why my server is crashing ?
-
-Because I started using golang 2 days ago :trollface:
-
-
-## Useful information
-
-#### Data transfers
-
-Data sent through the socket is sent to each worker connected to the socket.
-The data sent is a encoded struct of ClientCommand:
+TOTAL length of the packet\
+Fragmentation byte: 0 or 1\
+Packet byte\
+Flag byte\
+Args: Array of array of bytes
 
 ```go
 type ClientCommand struct {
-	Command string
-	Data    [][]byte
+	// The length of the command.
+	Length byte
+	// Fragmentation byte.
+	Fragmented byte
+	// The byte of the command.
+	Byte byte
+	// The flags of the command.
+	Flag byte
+	// The arguments of the command.
+	Args [][]byte
 }
 ```
 
-Since the server do not know where the data should be delivered, you need to provide a flag which tells the server where the data should be sent.
+#### Destination Flags
 ```go
 var Flags = map[string]byte{
 	"SERVER": 0x00, // Server
@@ -65,72 +83,102 @@ var Flags = map[string]byte{
 }
 ```
 
+#### Commands
+The commands are arrays of bytes
+They are at index 4 of the packet
 
-#### Register a new worker
+#### Workers
 
-```go
-type Client struct {
-	// The name of the client.
-	Name    string
-	// The connection to the client.
-	Conn    net.Conn
-	// The password of the client.
-	Password string
+A worker can be registered via the packet `5`\
+`ADD_WORKER {Length Fragmented Byte Flag [Username Password]}`\
+Example: \
+`ADD_WORKER {44 0 5 0 [[75 97 109 105 103 101 110] [49 53 102 57 57 54 48 53 45 51 52 102 101 45 52 100 55 53 45 56 54 56 102 45 57 55 100 54 98 97 99 50 101 102 50 102]]}`
+
+A worker can also be removed with the packet `6`\
+`REMOVE_WORKER {Length Fragmented Byte Flag [Username Password]}`\
+Example: \
+`REMOVE_WORKER {44 0 6 0 [[75 97 109 105 103 101 110] [49 53 102 57 57 54 48 53 45 51 52 102 101 45 52 100 55 53 45 56 54 56 102 45 57 55 100 54 98 97 99 50 101 102 50 102]]}`
+
+
+#### Job Tracking
+When sending a: Baritone or HighwayTools packet, a job will be created.\
+A job will emit his status when the game receives a:
+- JobEvent
+- StartPathingEvent
+- StopPathingEvent
+- UpdatePathingEvent
+
+Is emitted
+
+```
+Started:
+83 0 8 1 Job type:1 Status:0 Goal:BetterBlockPos{x=0,y=0,z=0} Player:Kamigen Scheduled
+
+
+Finished:
+83 0 8 1 Job type:1 Status:1 Goal:BetterBlockPos{x=0,y=0,z=0} Player:Kamigen Scheduled
+```
+*Take note that the format can change based on conditions*
+
+Worker type:
+```kotlin
+enum class EWorkerType(val byte: Int) {
+    HIGHWAY(byte = 0x00),
+    BARITONE(byte = 0x01),
+}
+```
+Worker status
+```kt
+enum class EWorkerStatus(val byte: Byte) {
+    BUSY(byte = 0x00),
+    IDLE(byte = 0x01),
 }
 ```
 
+If the worker is stuck, the game will send emit an event with the `JOB_STUCK` byte.\
+It will also be sent to the socket with the flag `1`
 
+Job events:
+```kt
+enum class EJobEvents(val byte: Int) {
+    JOB_STARTED(byte = 0x00),
+    JOB_FINISHED(byte = 0x01),
+    JOB_FAILED(byte = 0x02),
+    JOB_PAUSED(byte = 0x03),
+    JOB_RESUMED(byte = 0x04),
+    JOB_CANCELLED(byte = 0x05),
+    JOB_SCHEDULED(byte = 0x06),
+    JOB_STUCK(byte = 0x07),
+}
+```
 
-Packets:
+#### TODO: Remaining
 
 ```go
 var Packets = map[string]byte{
-"EXIT":            0x00, // user->server->client Notifies the client that the server is closing the connection.
-"OK":              0x01, // client<->server Notifies the client that the server is ready to receive the next packet.
-"HEARTBEAT":       0x02, // client<->server Ping packet.
-"LOGIN":           0x03, // user->server<->client Notifies the server that the client is trying to log in.
-"LOGOUT":          0x04, // user->server<->client Notifies the server that the client is trying to log out.
-"ADD_WORKER":      0x05, // user<->server Notifies the server of a new worker.
-"REMOVE_WORKER":   0x06, // user<->server Notifies the server that a worker has been removed.
-"GET_WORKERS":     0x07, // user<->server<->client Notifies the server that the user wants to get the list of workers.
-"JOB":             0x08, // user<->server<->client Notifies the server that the user wants to get the status of a worker.
-"CHAT":            0x09, // user->server<->client Notifies the server that the user wants to send a chat message.
-"BARITONE":        0x0A, // user->server<->client Notifies the server that the user wants to send a baritone command.
-"LAMBDA":          0x0B, // user->server<->client Notifies the server that the user wants to send a lambda command.
-"ERROR":           0x0C, // client<->server<->user Notifies the user that the server or the client has encountered an error.
-"LISTENER_ADD":    0x0D, // user<->server Notifies the server that a listener has been added.
-"LISTENER_REMOVE": 0x0E, // user<->server Notifies the server that a listener has been removed.
-"HIGHWAY_TOOLS":   0x0F, // user<->server<->client Notifies the server that the user wants to send a highwaytools command.
-"SCREENSHOT":      0x10, // user<->server<->client Notifies the server that the user wants to get a screenshot.
-"GET_JOBS":        0x11, // user<->server<->client Notifies the server that the user wants to get the list of jobs.
+	"EXIT":            0x00, // user->server->client Notifies the client that the server is closing the connection.
+	"OK":              0x01, // client<->server Notifies the client that the server is ready to receive the next packet.
+	"HEARTBEAT":       0x02, // client<->server Ping packet.
+	"LOGIN":           0x03, // user->server<->client Notifies the server that the client is trying to log in.
+	"LOGOUT":          0x04, // user->server<->client Notifies the server that the client is trying to log out.
+	"ADD_WORKER":      0x05, // user<->server Notifies the server of a new worker.
+	"REMOVE_WORKER":   0x06, // user<->server Notifies the server that a worker has been removed.
+	"INFORMATIONS":    0x07, // user<->server<->client Notifies the server that the user wants to get the information of a worker.
+	"JOB":             0x08, // user<->server<->client Notifies the server that the user wants to get the status of a worker.
+	"CHAT":            0x09, // user->server<->client Notifies the server that the user wants to send a chat message.
+	"BARITONE":        0x0A, // user->server<->client Notifies the server that the user wants to send a baritone command.
+	"LAMBDA":          0x0B, // user->server<->client Notifies the server that the user wants to send a lambda command.
+	"ERROR":           0x0C, // client<->server<->user Notifies the user that the server or the client has encountered an error.
+	"LISTENER_ADD":    0x0D, // user<->server Notifies the server that a listener has been added.
+	"LISTENER_REMOVE": 0x0E, // user<->server Notifies the server that a listener has been removed.
+	"HIGHWAY_TOOLS":   0x0F, // user<->server<->client Notifies the server that the user wants to send a highwaytools command.
+	"SCREENSHOT":      0x10, // user<->server<->client Notifies the server that the user wants to get a screenshot.
+	"GET_JOBS":        0x11, // user<->server<->client Notifies the server that the user wants to get the list of jobs.
+	"ROTATE":          0x12, // user<->server<->client Rotates the worker head position.
 }
 ```
 
-
-#### Protocol
-
-Each packet sent must match the hardcoded protocol, a documentation will soon be available
-
-```
-[Length] [Fragmented] [Packet] [Flag] [Worker] [Password] [Data]
-```
-
-
-
-
-## Examples
-
-Using the client.js
-
-```bash
-node client.js
-
-10 0 9 2 Kamigen password Hello Chat
-```
-
-Dev Video: https://youtu.be/j80Uqv2IxQI
-
-Video: SOON
+Latest dev footage: https://youtu.be/j80Uqv2IxQI
 
 Packages graph:
 
