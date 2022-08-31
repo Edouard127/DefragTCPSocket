@@ -38,8 +38,8 @@ If you use a strong password, or the default randomly generated password, it is 
 ## Installation
 
 If you have already installed golang, you can skip this step. \
-Install golang : https://go.dev/dl/ \
-Add go to PATH : https://golang.org/doc/install/source#environment
+[Download](https://go.dev/dl/) \
+[Add to PATH](https://golang.org/doc/install/source#environment)
 
 ```bash
 git clone https://github.com/Edouard127/DefragTCPSocket.git
@@ -178,7 +178,9 @@ var Packets = map[string]byte{
 }
 ```
 
-Latest dev footage: https://youtu.be/j80Uqv2IxQI
+Latest dev footage: [Video](https://youtu.be/j80Uqv2IxQI)
+
+
 
 Packages graph:
 
