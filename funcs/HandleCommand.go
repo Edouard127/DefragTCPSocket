@@ -121,7 +121,7 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 		}
 	case 0x01:
 		{
-			utils.LogFile(false, "[INFO]", "Received command:", c.GetPacketName())
+			utils.LogFile(false, enums.INFO, "Received command:", c.GetPacketName())
 			fmt.Println("Client side")
 			structs.BroadcastListeners(message)
 		}
