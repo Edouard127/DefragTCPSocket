@@ -1,7 +1,5 @@
 package structs
 
-import "kamigen/socket/utils"
-
 type ClientCommand struct {
 	// The length of the command.
 	Length byte
@@ -27,5 +25,13 @@ func (c *ClientCommand) GetPacketName() string {
 
 // GetCommand Get the command from the ClientCommands bytes.
 func (c *ClientCommand) GetCommand() string {
-	return string(c.Length) + " " + string(c.Fragmented) + " " + string(c.Byte) + " " + string(c.Flag) + " " + string(utils.ByteArraysExtract(c.Args))
+	return string(rune(c.Length)) + " " + string(rune(c.Fragmented)) + " " + string(rune(c.Byte)) + " " + string(rune(c.Flag)) + " " + string(ArgsExtract(c.Args))
+}
+func ArgsExtract(arr [][]byte) []byte {
+	var b []byte
+	for _, v := range arr {
+		b = append(b, v...)
+		b = append(b, ' ')
+	}
+	return b
 }

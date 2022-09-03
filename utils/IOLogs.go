@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var ConsoleHistory []*string
+
 func LogFile(con bool, logger enums.Level, message ...string) error {
 	if _, err := os.Stat("log.txt"); os.IsNotExist(err) {
 		f, err := os.Create("log.txt")
@@ -33,11 +35,12 @@ func LogFile(con bool, logger enums.Level, message ...string) error {
 			}
 			return nil
 		}(f)
-		if _, err := f.WriteString(fmt.Sprintf("%s: [%s] %s\n", date.String(), logger, strings.Join(message[:], " "))); err != nil {
+		s := fmt.Sprintf("%s: [%s] %s\n", date.String(), logger, strings.Join(message[:], " "))
+		if _, err := f.WriteString(s); err != nil {
 			return err
 		}
-		if con {
-			fmt.Println(message)
+		if con == true {
+			ConsoleHistory = append(ConsoleHistory, &s)
 		}
 		return nil
 	}

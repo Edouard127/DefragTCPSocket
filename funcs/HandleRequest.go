@@ -9,7 +9,7 @@ import (
 )
 
 func HandleRequest(conn net.Conn, bSize int) {
-	utils.LogFile(false, enums.INFO, "New connection from:", conn.RemoteAddr().String())
+	utils.LogFile(true, enums.INFO, "New connection from:", conn.RemoteAddr().String())
 
 	for {
 		i, buffer, err := ReadAll(conn, bSize)
@@ -17,7 +17,7 @@ func HandleRequest(conn net.Conn, bSize int) {
 			continue
 		}
 		if err != nil {
-			utils.LogFile(false, enums.INFO, "Connection from:", conn.RemoteAddr().String(), "closed")
+			utils.LogFile(true, enums.INFO, "Connection from:", conn.RemoteAddr().String(), "closed")
 			utils.LogFile(true, enums.ERROR, "Error: ", err.Error())
 			conn.Close()
 			return

@@ -42,7 +42,7 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 			}
 	*/
 
-	// Store the request data in a splited array.
+	// Store the request data in a split array.
 	request := strings.Fields(string(cmd))
 	// Store the arguments of the request
 	args := utils.GetArgs(request[4:])
@@ -54,8 +54,8 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 
 	// Store the command in a ClientCommands struct.
 	c := structs.ClientCommand{Length: byte(length), Fragmented: byte(fragmentationByte), Byte: byte(packetByte), Flag: byte(packetFlag), Args: args}
-	message := utils.ByteArraysExtract(utils.GetArgs(request))
-	fmt.Println(c.GetPacketName(), c)
+	message := structs.ArgsExtract(utils.GetArgs(request))
+	utils.LogFile(true, enums.INFO, "New command:", c.GetPacketName(), "args:", string(message))
 
 	// TODO
 	if needFragmentation {
@@ -79,8 +79,7 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 					listeners := &structs.Listeners
 					// Get random bytes for the listener id.
 					id := utils.GetRandomBytes(16)
-
-					fmt.Println("Registering listener with id:", id, "(", string(id), ")")
+					utils.LogFile(true, enums.INFO, "New listener registered with ID:", string(id))
 
 					listener := structs.Listener{Hash: id, Conn: con}
 

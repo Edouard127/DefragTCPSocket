@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"kamigen/socket/funcs"
+	"kamigen/socket/utils"
 	"net"
 )
 
@@ -24,7 +24,8 @@ func main() {
 
 		}
 	}(listener)
-	color.New(color.BgCyan, color.Bold).Println("Server started on:", HOST+":"+PORT)
+	go utils.InitGUI()
+	//color.New(color.BgCyan, color.Bold).Println("Server started on:", HOST+":"+PORT)
 
 	for {
 		conn, err := listener.Accept()
