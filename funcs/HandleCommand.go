@@ -103,6 +103,10 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 					if err != nil {
 						return
 					}
+					if err := structs.BroadcastWorkers(message); err != nil {
+						utils.LogFile(false, enums.ERROR, "Error while broadcasting to workers:", err.Error())
+						con.Write([]byte{structs.Packets["ERROR"]})
+					}
 				}
 			case 0x06:
 				{
@@ -111,6 +115,10 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 					clients := &structs.Clients
 					if i, _, err := structs.GetClient(name); err == nil {
 						*clients = append((*clients)[:i], (*clients)[i+1:]...)
+						if err := structs.BroadcastWorkers(message); err != nil {
+							utils.LogFile(false, enums.ERROR, "Error while broadcasting to workers:", err.Error())
+							con.Write([]byte{structs.Packets["ERROR"]})
+						}
 					} else {
 						utils.LogFile(false, enums.ERROR, "Client not found")
 						con.Write([]byte{structs.Packets["ERROR"]})
@@ -126,12 +134,8 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 		}
 	case 0x02:
 		{
-			// Game side
-			if _, c, err := structs.GetClient(string(args[0])); err == nil {
-				c.Conn.Write(message)
-				c.Conn.Write([]byte{'\n'})
-			} else {
-				utils.LogFile(false, enums.ERROR, "Client not found")
+			if err := structs.BroadcastWorkers(message); err != nil {
+				utils.LogFile(false, enums.ERROR, "Error while broadcasting to workers:", err.Error())
 				con.Write([]byte{structs.Packets["ERROR"]})
 			}
 		}
