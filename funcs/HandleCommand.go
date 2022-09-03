@@ -1,7 +1,6 @@
 package funcs
 
 import (
-	"fmt"
 	"kamigen/socket/enums"
 	"kamigen/socket/structs"
 	"kamigen/socket/utils"
@@ -128,8 +127,6 @@ func HandleCommand(connection *net.Conn, command *[]byte, needFragmentation bool
 		}
 	case 0x01:
 		{
-			utils.LogFile(false, enums.INFO, "Received command:", c.GetPacketName())
-			fmt.Println("Client side")
 			structs.BroadcastListeners(message)
 		}
 	case 0x02:
