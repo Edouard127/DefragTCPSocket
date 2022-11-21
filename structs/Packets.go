@@ -1,23 +1,96 @@
 package structs
 
-var Packets = map[string]byte{
-	"EXIT":            0x00, // user->server->client Notifies the client that the server is closing the connection.
-	"OK":              0x01, // client<->server Notifies the client that the server is ready to receive the next packet.
-	"HEARTBEAT":       0x02, // client<->server Ping packet.
-	"LOGIN":           0x03, // user->server<->client Notifies the server that the client is trying to log in.
-	"LOGOUT":          0x04, // user->server<->client Notifies the server that the client is trying to log out.
-	"ADD_WORKER":      0x05, // user<->server Notifies the server of a new worker.
-	"REMOVE_WORKER":   0x06, // user<->server Notifies the server that a worker has been removed.
-	"INFORMATION":     0x07, // user<->server<->client Notifies the server that the user wants to get the information of a worker.
-	"JOB":             0x08, // user<->server<->client Notifies the server that the user wants to get the status of a worker.
-	"CHAT":            0x09, // user->server<->client Notifies the server that the user wants to send a chat message.
-	"BARITONE":        0x0A, // user->server<->client Notifies the server that the user wants to send a baritone command.
-	"LAMBDA":          0x0B, // user->server<->client Notifies the server that the user wants to send a lambda command.
-	"ERROR":           0x0C, // client<->server<->user Notifies the user that the server or the client has encountered an error.
-	"LISTENER_ADD":    0x0D, // user<->server Notifies the server that a listener has been added.
-	"LISTENER_REMOVE": 0x0E, // user<->server Notifies the server that a listener has been removed.
-	"HIGHWAY_TOOLS":   0x0F, // user<->server<->client Notifies the server that the user wants to send a highwaytools command.
-	"SCREENSHOT":      0x10, // user<->server<->client Notifies the server that the user wants to get a screenshot.
-	"GET_JOBS":        0x11, // user<->server<->client Notifies the server that the user wants to get the list of jobs.
-	"ROTATE":          0x12, // user<->server<->client Rotates the worker head position.
+import (
+	"bytes"
+	"encoding/binary"
+)
+
+type Packet uint8
+
+const (
+	EXIT Packet = iota
+	OK
+	HEARTBEAT
+	LOGIN
+	LOGOUT
+	ADD_WORKER
+	REMOVE_WORKER
+	ADD_LISTENER
+	REMOVE_LISTENER
+	INFORMATION
+	ROTATE
+	HIGHWAY_TOOLS
+	JOB
+	GET_JOBS
+	CHAT
+	BARITONE
+	LAMBDA
+	ERROR
+	SCREENSHOT
+)
+
+func (p Packet) String() string {
+	// Return the string representation of the constant
+	switch p {
+	case EXIT:
+		return "EXIT"
+	case OK:
+		return "OK"
+	case HEARTBEAT:
+		return "HEARTBEAT"
+	case LOGIN:
+		return "LOGIN"
+	case LOGOUT:
+		return "LOGOUT"
+	case ADD_WORKER:
+		return "ADD_WORKER"
+	case REMOVE_WORKER:
+		return "REMOVE_WORKER"
+	case ADD_LISTENER:
+		return "ADD_LISTENER"
+	case REMOVE_LISTENER:
+		return "REMOVE_LISTENER"
+	case INFORMATION:
+		return "INFORMATION"
+	case ROTATE:
+		return "ROTATE"
+	case HIGHWAY_TOOLS:
+		return "HIGHWAY_TOOLS"
+	case JOB:
+		return "JOB"
+	case GET_JOBS:
+		return "GET_JOBS"
+	case CHAT:
+		return "CHAT"
+	case BARITONE:
+		return "BARITONE"
+	case LAMBDA:
+		return "LAMBDA"
+	case ERROR:
+		return "ERROR"
+	case SCREENSHOT:
+		return "SCREENSHOT"
+	}
+	return "UNKNOWN"
+}
+
+func CreatePacket(command Packet, destination Destination, payload interface{}) []byte {
+	buffer := new(bytes.Buffer)
+	if err := binary.Write(buffer, binary.LittleEndian, payload); err != nil {
+		return nil
+	}
+	header := CommandHeader{
+		Command:     [1]byte{byte(command)},
+		Destination: [1]byte{byte(destination)},
+	}
+	c := Command{
+		Header:  header,
+		Payload: buffer.Bytes(),
+	}
+	nbuffer := new(bytes.Buffer)
+	nbuffer.Write(c.Header.Command[:])
+	nbuffer.Write(c.Header.Destination[:])
+	nbuffer.Write(c.Payload)
+	nbuffer.Write([]byte("\r\n"))
+	return nbuffer.Bytes()
 }

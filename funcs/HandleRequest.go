@@ -1,47 +1,33 @@
 package funcs
 
 import (
+	"bytes"
 	"kamigen/socket/enums"
+	. "kamigen/socket/structs"
 	"kamigen/socket/utils"
 	"net"
-	"strconv"
-	"strings"
 )
 
-func HandleRequest(conn net.Conn, bSize int) {
+func HandleRequest(conn net.Conn) {
 	utils.LogFile(true, enums.INFO, "New connection from:", conn.RemoteAddr().String())
 
-	for {
-		i, buffer, err := ReadAll(conn, bSize)
-		if i == 0 {
-			continue
-		}
-		if err != nil {
-			utils.LogFile(true, enums.INFO, "Connection from:", conn.RemoteAddr().String(), "closed")
-			utils.LogFile(true, enums.ERROR, "Error: ", err.Error())
-			conn.Close()
-			return
-		}
-		c := strings.Fields(string(buffer))
+	// Make a buffer to hold incoming data.
+	buf := make([]byte, 1024)
 
-		//length, _ := strconv.Atoi(c[0])
-		if fragmented, err := strconv.Atoi(c[1]); err != nil {
-			utils.LogFile(true, enums.ERROR, "Error: ", err.Error())
-			conn.Close()
-			return
-		} else if fragmented == 1 || fragmented == 0 {
-			go HandleCommand(&conn, &buffer, fragmented == 1)
-		}
+	// Read the incoming connection into the buffer.
+	reqLen, err := conn.Read(buf)
+	if err != nil {
+		utils.LogFile(true, enums.ERROR, "Error reading:", err.Error())
 	}
-}
 
-// ReadAll Read all the data from the connection
-func ReadAll(conn net.Conn, b int) (int, []byte, error) {
-	buffer := make([]byte, b)
-	if i, err := conn.Read(buffer); err != nil {
-		return i, buffer, err
-	} else {
-		buffer = buffer[:i]
-		return i, buffer, nil
+	command := Command{}
+
+	rBuffer := bytes.NewBuffer(buf[:reqLen])
+	// Read the header
+	err = command.Read(rBuffer)
+	if err != nil {
+		utils.LogFile(true, enums.ERROR, "Error reading:", err.Error())
 	}
+	command.Payload = rBuffer.Bytes()
+	HandleCommand(&conn, &command)
 }

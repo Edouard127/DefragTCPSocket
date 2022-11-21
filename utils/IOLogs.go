@@ -40,7 +40,7 @@ func LogFile(con bool, logger enums.Level, message ...string) error {
 			return err
 		}
 		if con == true {
-			ConsoleHistory = append(ConsoleHistory, &s)
+			fmt.Println(s)
 		}
 		return nil
 	}

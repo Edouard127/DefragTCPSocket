@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
+	"kamigen/socket/enums"
 	"kamigen/socket/funcs"
 	"kamigen/socket/utils"
 	"net"
 )
 
 const (
-	HOST        = "localhost"
-	PORT        = "1984"
-	BUFFER_SIZE = 1024
+	HOST = "localhost"
+	PORT = "1984"
 )
 
 func main() {
@@ -21,22 +21,20 @@ func main() {
 	defer func(listener net.Listener) {
 		err := listener.Close()
 		if err != nil {
-
+			panic(err)
 		}
 	}(listener)
-	go utils.InitGUI()
-	//color.New(color.BgCyan, color.Bold).Println("Server started on:", HOST+":"+PORT)
+	fmt.Printf("Listening on %s:%s\n", HOST, PORT)
 
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			fmt.Println(err, "error")
-			continue
+			utils.LogFile(true, enums.ERROR, "Error accepting: ", err.Error())
 		}
 
 		// Execute the keepAlive function in a new goroutine
-		go funcs.KeepAlive()
+		//go funcs.KeepAlive()
 		// Execute the handleRequest function in a new goroutine
-		go funcs.HandleRequest(conn, BUFFER_SIZE)
+		go funcs.HandleRequest(conn)
 	}
 }
